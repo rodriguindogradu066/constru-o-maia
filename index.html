@@ -105,6 +105,8 @@ tr.sum td{font-weight:900;border-bottom:0;font-size:15px}
 .prog{height:12px;background:#e6e6e9;border-radius:6px;overflow:hidden;margin:8px 0 4px}.prog i{display:block;height:100%;background:var(--or);border-radius:6px}
 .prog i.done{background:var(--ok)}
 details.gl summary{cursor:pointer;font-weight:700;padding:4px 0}details.gl dt{font-weight:700;margin-top:8px}details.gl dd{margin:2px 0 0;color:var(--mu);font-size:14px}
+.th{width:40px;height:40px;flex:none;border-radius:8px;object-fit:cover;background:#f1f1f3;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:18px;color:#aaa;overflow:hidden}
+.th.sm{width:34px;height:34px;font-size:15px}.th.lg{width:84px;height:84px;font-size:30px}
 hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
 </style>
 </head>
@@ -273,7 +275,7 @@ function vInicio(){
   <h3>Mais vendidos</h3>
   <div class="card list">${top.length?top.map((t,i)=>`<div class="it"><b style="width:22px;color:var(--or2)">${i+1}</b><div class="grow"><div class="nm">${esc(t.nome)}</div><div class="mu">${t.q} un · lucro ${fmt(t.l)}</div></div><b>${fmt(t.f)}</b></div>`).join(''):'<div class="empty">Nenhuma venda no período</div>'}</div>
   <h3>Repor estoque</h3>
-  <div class="card list">${low.length?low.slice(0,10).map(p=>`<div class="it" data-act="editProd" data-id="${p.id}"><div class="grow"><div class="nm">${esc(p.nome)}</div><div class="mu">mínimo ${p.estoqueMin||0}</div></div><span class="badge low">${p.estoque} ${esc(p.unidade||'un')}</span></div>`).join(''):'<div class="empty">Tudo certo com o estoque 👍</div>'}</div>
+  <div class="card list">${low.length?low.slice(0,10).map(p=>`<div class="it" data-act="editProd" data-id="${p.id}">${thumb(p,'sm')}<div class="grow"><div class="nm">${esc(p.nome)}</div><div class="mu">mínimo ${p.estoqueMin||0}</div></div><span class="badge low">${p.estoque} ${esc(p.unidade||'un')}</span></div>`).join(''):'<div class="empty">Tudo certo com o estoque 👍</div>'}</div>
   <div class="card"><details class="gl"><summary>ℹ️ Como cada número é calculado</summary><dl>
     <dt>Faturamento</dt><dd>Soma do total das vendas (sem as canceladas), já com descontos. Inclui vendas no fiado.</dd>
     <dt>Lucro bruto e margem</dt><dd>Faturamento menos o custo dos produtos vendidos. Margem = lucro bruto ÷ faturamento.</dd>
@@ -300,7 +302,7 @@ function vVender(){
   <div class="card cart" style="margin-top:10px">
     <div class="row between"><b>Carrinho (${sum(UI.cart,'qtd')} itens)</b><span class="row"><button class="btn sm light" data-act="avulso">+ Avulso</button>${UI.cart.length?'<button class="btn sm light" data-act="clearCart">Limpar</button>':''}</span></div>
     ${UI.cart.length?UI.cart.map((c,i)=>{ const p=c.pid?prod(c.pid):null; const up=unitPrice(c); const hasD=p&&+p.precoDesc>0;
-      return `<div class="ci"><div class="row between"><div class="grow"><div class="nm" style="font-weight:700">${esc(p?p.nome:c.nome)}</div>
+      return `<div class="ci"><div class="row between">${thumb(p,'sm')}<div class="grow"><div class="nm" style="font-weight:700">${esc(p?p.nome:c.nome)}</div>
         <div class="mu">${fmt(up)} / ${esc(p?.unidade||'un')}${c.precoFix!=null?' <span class="badge or">preço do orçamento</span>':''}${p&&+p.estoque<c.qtd?' · <span class="neg">estoque: '+p.estoque+'</span>':''}</div></div><b>${fmt(up*c.qtd)}</b></div>
         <div class="row between" style="margin-top:6px"><div class="qty"><button data-act="qty" data-i="${i}" data-d="-1">−</button><input value="${c.qtd}" inputmode="decimal" onchange="setQty(${i},this.value)"><button data-act="qty" data-i="${i}" data-d="1">+</button></div>
         <div class="row">${hasD?`<button class="chip ${c.desc?'on':''}" data-act="togDesc" data-i="${i}">${c.desc?'✓ ':''}Desconto ${fmt(p.precoDesc)}</button>`:''}<button class="ghost" data-act="rmItem" data-i="${i}" style="font-size:18px">🗑️</button></div></div></div>`; }).join('')
@@ -326,7 +328,7 @@ function pdvResults(){
   const q=norm(UI.vq).trim(); const el=$('#pdvRes'); if(!el) return;
   if(!q){ el.innerHTML=''; return; }
   const r=S.produtos.filter(p=>p.ativo!==false&&(norm(p.nome).includes(q)||String(p.codigo||'').includes(q))).slice(0,30);
-  el.innerHTML=r.length?r.map(p=>`<div class="it" data-act="addPid" data-id="${p.id}"><div class="grow"><div class="nm">${esc(p.nome)}</div><div class="mu">${esc(p.codigo||'sem código')} · estoque ${p.estoque}</div></div><b>${fmt(p.preco)}</b></div>`).join('')
+  el.innerHTML=r.length?r.map(p=>`<div class="it" data-act="addPid" data-id="${p.id}">${thumb(p,'sm')}<div class="grow"><div class="nm">${esc(p.nome)}</div><div class="mu">${esc(p.codigo||'sem código')} · estoque ${p.estoque}</div></div><b>${fmt(p.preco)}</b></div>`).join('')
     :`<div class="it" data-act="cadCode" data-code="${esc(UI.vq)}"><div class="grow">Nenhum produto. <b style="color:var(--or)">Cadastrar “${esc(UI.vq)}”?</b></div></div>`;
 }
 function pdvEnter(){ const q=UI.vq.trim(); if(!q) return; const p=S.produtos.find(p=>String(p.codigo)===q); if(p){ addCart(p.id); UI.vq=''; render(); setTimeout(()=>$('#pdvQ')?.focus(),30);} else pdvResults(); }
@@ -517,6 +519,18 @@ function orcPerdido(id){ const o=orc(id);
 function orcPerdidoOk(id,m){ const o=orc(id); o.status='perdido'; o.motivo=m; save('orcamentos'); verOrc(id); }
 function orcExcluir(id){ if(!confirm('Excluir este orçamento?')) return; S.orcamentos=S.orcamentos.filter(o=>o.id!==id); save('orcamentos'); closeModal(); render(); }
 
+/* ================= FOTOS + CUSTO REAL ================= */
+function thumb(p,cls=''){ const f=p&&p.foto; return f?`<img class="th ${cls}" src="${f}" alt="" loading="lazy">`:`<span class="th ${cls}">📦</span>`; }
+function custoReal(compra,icms,frete){ return r2(num(compra)*(1+num(icms)/100)+num(frete)); }
+function fotoArquivo(file){ return new Promise((res,rej)=>{ if(!file) return rej(); const img=new Image(); const u=URL.createObjectURL(file);
+  img.onload=()=>{ const S2=200, c=document.createElement('canvas'); c.width=S2; c.height=S2; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,S2,S2);
+    const k=Math.min(S2/img.width,S2/img.height); const w=img.width*k, h=img.height*k; g.drawImage(img,(S2-w)/2,(S2-h)/2,w,h); URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg',.72)); };
+  img.onerror=()=>{ URL.revokeObjectURL(u); rej(); }; img.src=u; }); }
+async function aplicarFotosRepo(){ try{ const r=await fetch('fotos-produtos.json?t='+Date.now(),{cache:'no-store'}); if(!r.ok) return; const j=await r.json(); let n=0;
+  (j.fotos||[]).forEach(f=>{ const p=S.produtos.find(p=>!p.foto&&((f.codigo&&String(p.codigo)===String(f.codigo))||norm(p.nome)===norm(f.nome))); if(p){ p.foto=f.foto; n++; } });
+  window.FOTOS_REPO=j.fotos||[]; if(n){ save('produtos'); render(); } }catch(e){} }
+function fotoRepo(cod,nome){ return (window.FOTOS_REPO||[]).find(f=>(cod&&String(f.codigo)===String(cod))||norm(f.nome)===norm(nome))?.foto||''; }
+
 /* ================= TELA: produtos ================= */
 function vProdutos(){
   const q=norm(UI.pq).trim();
@@ -527,7 +541,7 @@ function vProdutos(){
   <div class="row"><input placeholder="🔎 Nome ou código…" value="${esc(UI.pq)}" oninput="UI.pq=this.value;clearTimeout(window._pq);window._pq=setTimeout(()=>{render();const i=document.querySelector('#view input');i.focus();i.setSelectionRange(i.value.length,i.value.length)},250)"><button class="btn dark" data-act="scanFind" title="Escanear">📷</button></div>
   <div class="chips" style="margin-top:8px"><button class="chip ${!UI.pcat?'on':''}" data-act="pcat" data-c="">Todos</button>${cats.map(c=>`<button class="chip ${UI.pcat===c?'on':''}" data-act="pcat" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div>
   <div class="card list" style="margin-top:8px">${l.length?l.slice(0,300).map(p=>{ const m=+p.preco?((p.preco-p.custo)/p.preco*100):0; const low=+p.estoque<=+p.estoqueMin;
-    return `<div class="it" data-act="editProd" data-id="${p.id}"><div class="grow"><div class="nm">${esc(p.nome)}${p.ativo===false?' <span class="badge">inativo</span>':''}</div>
+    return `<div class="it" data-act="editProd" data-id="${p.id}">${thumb(p)}<div class="grow"><div class="nm">${esc(p.nome)}${p.ativo===false?' <span class="badge">inativo</span>':''}</div>
     <div class="mu">${esc(p.codigo||'sem código')} · margem ${pct(m)}</div></div>
     <div style="text-align:right"><b>${fmt(p.preco)}</b>${+p.precoDesc>0?`<div class="mu" style="color:var(--or2)">desc. ${fmt(p.precoDesc)}</div>`:''}<span class="badge ${low?'low':'okb'}">${p.estoque} ${esc(p.unidade||'un')}</span></div></div>`;}).join('')
     :`<div class="empty">${S.produtos.length?'Nada encontrado':'Nenhum produto cadastrado ainda.<br><br>Toque em <b>+ Novo</b> ou importe uma planilha em <b>Mais → Importar produtos</b>.'}</div>`}</div>`;
@@ -535,14 +549,19 @@ function vProdutos(){
 function canEdit(){ if(needPin()){ toast('Peça ao dono para desbloquear (PIN)'); return false; } return true; }
 function openProd(id,pre={},fromSale=false){
   if(!canEdit()) return;
-  const p=id?prod(id):{id:'',nome:'',codigo:'',categoria:'',unidade:'un',custo:'',preco:'',precoDesc:'',estoque:'',estoqueMin:'',ativo:true,...pre};
+  const p=id?prod(id):{id:'',nome:'',codigo:'',categoria:'',unidade:'un',custo:'',preco:'',precoDesc:'',estoque:'',estoqueMin:'',ativo:true,icms:S.config.icmsPadrao||'',frete:'',foto:'',...pre};
+  const cc=p.custoCompra!=null?p.custoCompra:p.custo; const dv=v=>v!==''&&v!=null&&+v?String(v).replace('.',','):''; window._pfFoto=p.foto||'';
   modal(`<div class="row between"><h2>${id?'Editar':'Novo'} produto</h2><button class="ghost" onclick="closeModal()">✕</button></div>
+  <div class="row" style="align-items:flex-start;gap:12px"><div id="pf_fotoBox">${thumb({foto:p.foto},'lg')}</div><div class="grow"><label style="margin-top:0">Foto do produto</label><div class="row wrap"><label class="btn sm dark" style="margin:0;color:#fff">📷 Tirar foto<input type="file" accept="image/*" capture="environment" hidden onchange="pfFoto(this.files[0])"></label><label class="btn sm light" style="margin:0;color:var(--tx)">🖼️ Galeria<input type="file" accept="image/*" hidden onchange="pfFoto(this.files[0])"></label>${p.foto?`<button class="btn sm light" onclick="window._pfFoto='';$('#pf_fotoBox').innerHTML=thumb({},'lg')">Remover</button>`:''}</div></div></div>
   <label>Nome do produto *</label><input id="pf_nome" value="${esc(p.nome)}" placeholder="Ex.: Cimento CP II 50kg">
   <label>Código de barras</label><div class="row"><input id="pf_codigo" value="${esc(p.codigo)}" inputmode="numeric" placeholder="Escaneie ou digite"><button class="btn dark" onclick="scanStart('single',c=>{$('#pf_codigo').value=c})">📷</button></div>
   <div class="grid"><div><label>Categoria</label><input id="pf_cat" list="catList" value="${esc(p.categoria)}"><datalist id="catList">${CATS.map(c=>`<option value="${c}">`).join('')}</datalist></div>
   <div><label>Unidade</label><select id="pf_un">${['un','sc','kg','m','m²','L','gl','cx','pç','rolo','barra','balde'].map(u=>`<option ${p.unidade===u?'selected':''}>${u}</option>`).join('')}</select></div></div>
-  <div class="grid"><div><label>Preço de custo (R$)</label><input id="pf_custo" inputmode="decimal" value="${p.custo!==''?String(p.custo).replace('.',','):''}" oninput="pfCalc()"></div>
-  <div><label>Preço de venda (R$) *</label><input id="pf_preco" inputmode="decimal" value="${p.preco!==''?String(p.preco).replace('.',','):''}" oninput="pfCalc()"></div></div>
+  <div class="card" style="box-shadow:none;border:1px solid var(--bd);margin:12px 0 0"><b>Custo</b>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)"><div><label>Compra (R$/un)</label><input id="pf_custo" inputmode="decimal" value="${dv(cc)}" oninput="pfCalc()"></div><div><label>ICMS (%)</label><input id="pf_icms" inputmode="decimal" value="${dv(p.icms)}" placeholder="0" oninput="pfCalc()"></div><div><label>Frete (R$/un)</label><input id="pf_frete" inputmode="decimal" value="${dv(p.frete)}" placeholder="0" oninput="pfCalc()"></div></div>
+  <div class="row between" style="margin-top:8px"><span class="mu">Custo real (compra + ICMS + frete)</span><b id="pf_real">—</b></div></div>
+  <div class="grid"><div><label>Preço de venda (R$) *</label><input id="pf_preco" inputmode="decimal" value="${p.preco!==''?String(p.preco).replace('.',','):''}" oninput="pfCalc()"></div>
+  <div><label>Margem desejada (%)</label><div class="row"><input id="pf_mg" inputmode="decimal" placeholder="%" style="min-width:0"><button class="btn sm light" onclick="pfSugerir()">OK</button></div></div></div>
   <div class="grid"><div><label>Preço com desconto (R$)</label><input id="pf_desc" inputmode="decimal" value="${+p.precoDesc?String(p.precoDesc).replace('.',','):''}" placeholder="opcional" oninput="pfCalc()"></div>
   <div><label>Margem</label><div id="pf_m" class="card" style="margin:0;padding:10px;box-shadow:none;border:1px solid var(--bd)">—</div></div></div>
   <div class="grid"><div><label>Estoque atual</label><input id="pf_est" inputmode="decimal" value="${p.estoque}"></div>
@@ -552,7 +571,10 @@ function openProd(id,pre={},fromSale=false){
   ${id?`<div class="row" style="margin-top:10px"><button class="btn light" style="flex:1" onclick="entradaEstoque('${p.id}')">📥 Entrada de estoque</button><button class="btn red" onclick="delProd('${p.id}')">Excluir</button></div>`:''}`);
   pfCalc();
 }
-function pfCalc(){ const c=num($('#pf_custo').value), v=num($('#pf_preco').value), d=num($('#pf_desc').value);
+async function pfFoto(f){ try{ window._pfFoto=await fotoArquivo(f); $('#pf_fotoBox').innerHTML=thumb({foto:window._pfFoto},'lg'); }catch(e){ toast('Não consegui ler a foto'); } }
+function pfSugerir(){ const m=num($('#pf_mg').value), c=custoReal($('#pf_custo').value,$('#pf_icms').value,$('#pf_frete').value); if(!c||m<=0||m>=95) return toast('Preencha o custo e a margem (até 94%)'); $('#pf_preco').value=String(r2(c/(1-m/100))).replace('.',','); pfCalc(); }
+function pfCalc(){ const c=custoReal($('#pf_custo').value,$('#pf_icms').value,$('#pf_frete').value), v=num($('#pf_preco').value), d=num($('#pf_desc').value);
+  $('#pf_real').textContent=c?fmt(c):'—';
   const m=v?((v-c)/v*100):0, md=d?((d-c)/d*100):null;
   $('#pf_m').innerHTML=v?`<b class="${m>=0?'pos':'neg'}">${pct(m)}</b> <span class="mu">(${fmt(v-c)}/un)</span>${md!==null?`<div class="mu">c/ desc.: ${pct(md)} (${fmt(d-c)})</div>`:''}`:'—'; }
 function saveProd(id,fromSale){
@@ -560,7 +582,7 @@ function saveProd(id,fromSale){
   if(!nome) return toast('Informe o nome'); if(!preco) return toast('Informe o preço de venda');
   if(codigo&&S.produtos.some(p=>p.codigo===codigo&&p.id!==id)) return toast('Já existe produto com esse código');
   const d=num($('#pf_desc').value); if(d&&d>=preco) return toast('Preço com desconto deve ser menor que o de venda');
-  const data={nome,codigo,categoria:$('#pf_cat').value.trim(),unidade:$('#pf_un').value,custo:num($('#pf_custo').value),preco,precoDesc:d,estoque:num($('#pf_est').value),estoqueMin:num($('#pf_min').value),ativo:$('#pf_ativo').checked};
+  const data={nome,codigo,categoria:$('#pf_cat').value.trim(),unidade:$('#pf_un').value,custoCompra:num($('#pf_custo').value),icms:num($('#pf_icms').value),frete:num($('#pf_frete').value),custo:custoReal($('#pf_custo').value,$('#pf_icms').value,$('#pf_frete').value),foto:window._pfFoto||'',preco,precoDesc:d,estoque:num($('#pf_est').value),estoqueMin:num($('#pf_min').value),ativo:$('#pf_ativo').checked};
   let p;
   if(id){ p=prod(id); Object.assign(p,data); } else { p={id:uid(),criado:new Date().toISOString(),...data}; S.produtos.push(p); }
   save('produtos'); closeModal(); toast('Produto salvo');
@@ -571,12 +593,12 @@ function delProd(id){ if(!confirm('Excluir este produto? As vendas antigas conti
 function entradaEstoque(id){ const p=prod(id);
   modal(`<h2>📥 Entrada de estoque</h2><p class="mu">${esc(p.nome)} — estoque atual: <b>${p.estoque}</b></p>
   <label>Quantidade que chegou</label><input id="en_q" inputmode="decimal">
-  <label>Novo preço de custo (opcional)</label><input id="en_c" inputmode="decimal" placeholder="${String(p.custo).replace('.',',')}">
+  <label>Preço de compra unitário (opcional)</label><input id="en_c" inputmode="decimal" placeholder="${String(p.custoCompra??p.custo).replace('.',',')}"><p class="mu">Será somado ICMS ${pct(+p.icms||0)} e frete ${fmt(+p.frete||0)}/un do cadastro.</p>
   <label class="row"><input type="checkbox" id="en_med" checked style="width:auto"> Calcular custo médio</label>
   <p class="mu">Compra de mercadoria não entra como despesa: o custo é descontado do lucro quando o produto é vendido.</p>
   <button class="btn big" onclick="doEntrada('${id}')">Confirmar entrada</button>`); }
 function doEntrada(id){ const p=prod(id), q=num($('#en_q').value), c=num($('#en_c').value); if(q<=0) return toast('Quantidade inválida');
-  if(c>0){ p.custo = $('#en_med').checked && +p.estoque>0 ? r2((p.estoque*p.custo+q*c)/(+p.estoque+q)) : c; }
+  if(c>0){ const cr=custoReal(c,p.icms,p.frete); p.custoCompra=c; p.custo = $('#en_med').checked && +p.estoque>0 ? r2((p.estoque*p.custo+q*cr)/(+p.estoque+q)) : cr; }
   p.estoque=r2(+p.estoque+q); save('produtos'); closeModal(); toast('Estoque atualizado: '+p.estoque); render(); }
 
 /* ================= ENTRADA DE MERCADORIA ================= */
@@ -586,10 +608,10 @@ async function checarEntradas(){ try{ const r=await fetch('entradas.json?t='+Dat
   if(ENT_PEND.length&&['inicio','produtos'].includes(UI.tab)) render(); }catch(e){} }
 function entBanner(){ if(!ENT_PEND.length) return ''; const e=ENT_PEND[0];
   return `<div class="card" style="border-left:4px solid var(--or);background:#fff4ec;margin-bottom:10px"><div class="row between wrap"><div><b>📥 Chegou mercadoria para conferir</b><div class="mu">${esc(e.descricao||'')} · ${e.itens.length} produtos</div></div><button class="btn" onclick="entAbrirPendente('${e.id}')">Conferir e dar entrada</button></div></div>`; }
-function entNova(){ if(!canEdit()) return; if(!S.rascunho||!S.rascunho.itens) S.rascunho={id:'',fornecedor:'',nota:'',margem:'',itens:[]}; UI.tab='entrada'; render(); }
+function entNova(){ if(!canEdit()) return; if(!S.rascunho||!S.rascunho.itens) S.rascunho={id:'',fornecedor:'',nota:'',margem:'',frete:'',icms:S.config.icmsPadrao?String(S.config.icmsPadrao):'',itens:[]}; UI.tab='entrada'; render(); }
 function entAbrirPendente(id){ if(!canEdit()) return; const e=ENT_PEND.find(x=>x.id===id); if(!e) return;
   if(S.rascunho?.itens?.length&&S.rascunho.id!==id&&!confirm('Você já tem uma entrada em andamento. Substituir por esta?')) return;
-  if(S.rascunho?.id!==id) S.rascunho={id:e.id,fornecedor:e.fornecedor||'',nota:'',margem:'',descricao:e.descricao||'',itens:e.itens.map(i=>{ const p=entAchar(i.codigo,i.nome); return {pid:p?.id||null,nome:p?p.nome:i.nome,codigo:i.codigo||p?.codigo||'',categoria:i.categoria||p?.categoria||'',unidade:i.unidade||p?.unidade||'un',qtd:'',custo:'',preco:'',dica:i.dica||''}; })};
+  if(S.rascunho?.id!==id) S.rascunho={id:e.id,fornecedor:e.fornecedor||'',nota:'',margem:'',frete:'',icms:S.config.icmsPadrao?String(S.config.icmsPadrao):'',descricao:e.descricao||'',itens:e.itens.map(i=>{ const p=entAchar(i.codigo,i.nome); return {pid:p?.id||null,nome:p?p.nome:i.nome,codigo:i.codigo||p?.codigo||'',categoria:i.categoria||p?.categoria||'',unidade:i.unidade||p?.unidade||'un',qtd:'',custo:'',preco:'',dica:i.dica||''}; })};
   save('rascunho'); UI.tab='entrada'; render(); }
 function entAchar(cod,nome){ return S.produtos.find(p=>(cod&&String(p.codigo)===String(cod)))||(nome?S.produtos.find(p=>norm(p.nome)===norm(nome)):null); }
 function entAddProduto(pid){ const p=prod(pid); const R=S.rascunho; const ex=R.itens.find(i=>i.pid===pid); if(ex){ toast('Já está na lista'); return; }
@@ -600,29 +622,35 @@ function entAddCodigo(code){ const R=S.rascunho; code=String(code).trim(); const
   R.itens.unshift(p?{pid:p.id,nome:p.nome,codigo:code,categoria:p.categoria||'',unidade:p.unidade||'un',qtd:'1',custo:'',preco:'',dica:''}:{pid:null,nome:'',codigo:code,categoria:'',unidade:'un',qtd:'1',custo:'',preco:'',dica:''});
   save('rascunho'); $('#scanInfo').innerHTML=p?`✅ <b>${esc(p.nome)}</b> adicionado`:`🆕 Código ${esc(code)} — produto novo, preencha o nome depois`; }
 function entSet(i,k,v){ S.rascunho.itens[i][k]=v; save('rascunho'); if(['custo','preco','qtd'].includes(k)) entTotais(); }
-function entTotais(){ const R=S.rascunho; const el=$('#entTot'); if(el) el.innerHTML=`${R.itens.length} produtos · ${sum(R.itens,i=>num(i.qtd))} unidades · compra <b>${fmt(sum(R.itens,i=>num(i.qtd)*num(i.custo)))}</b>`;
-  R.itens.forEach((it,i)=>{ const m=$('#entM'+i); if(m){ const c=num(it.custo),pv=num(it.preco)||(it.pid?+prod(it.pid)?.preco:0); m.innerHTML=c&&pv?`margem <b class="${pv>c?'pos':'neg'}">${pct((pv-c)/pv*100)}</b>`:''; } }); }
-function entAplicarMargem(){ const m=num($('#entMg').value); if(m<=0) return toast('Digite a margem em %'); S.rascunho.margem=String(m); let n=0;
-  S.rascunho.itens.forEach(i=>{ if(num(i.custo)>0&&!num(i.preco)){ i.preco=String(r2(num(i.custo)*(1+m/100))).replace('.',','); n++; } }); save('rascunho'); render(); toast(n?`Preço sugerido em ${n} produto(s)`:'Preencha o custo primeiro'); }
+function entCustoReal(i){ const R=S.rascunho; const c=num(i.custo); if(!c) return 0;
+  const tot=sum(R.itens,x=>num(x.qtd)*num(x.custo)); const fr=num(R.frete); const fu=tot>0&&num(i.qtd)>0?fr*(c/tot):0;
+  return custoReal(c,R.icms,fu); }
+function entTotais(){ const R=S.rascunho; const el=$('#entTot'); if(el) el.innerHTML=`${R.itens.length} produtos · ${sum(R.itens,i=>num(i.qtd))} unidades · compra <b>${fmt(sum(R.itens,i=>num(i.qtd)*num(i.custo)))}</b>${num(R.frete)||num(R.icms)?` · custo real <b>${fmt(sum(R.itens,i=>num(i.qtd)*entCustoReal(i)))}</b>`:''}`;
+  R.itens.forEach((it,i)=>{ const m=$('#entM'+i); if(m){ const c=num(it.custo),pv=num(it.preco)||(it.pid?+prod(it.pid)?.preco:0); const cr=entCustoReal(it); m.innerHTML=c?`custo real <b>${fmt(cr)}</b>/un${pv?` · margem <b class="${pv>cr?'pos':'neg'}">${pct((pv-cr)/pv*100)}</b>`:''}`:''; } }); }
+function entAplicarMargem(){ const m=num($('#entMg').value); if(m<=0||m>=95) return toast('Digite a margem em % (até 94)'); S.rascunho.margem=String(m); let n=0;
+  S.rascunho.itens.forEach(i=>{ if(num(i.custo)>0&&!num(i.preco)){ i.preco=String(r2(entCustoReal(i)/(1-m/100))).replace('.',','); n++; } }); save('rascunho'); render(); toast(n?`Preço sugerido em ${n} produto(s)`:'Preencha o custo primeiro'); }
 function vEntrada(){
   if(needPin()) return vLock(); const R=S.rascunho||(S.rascunho={id:'',fornecedor:'',nota:'',margem:'',itens:[]}); const H=(S.entradas||[]).slice(-8).reverse();
   return `<div class="row between"><h2>📥 Entrada de mercadoria</h2><button class="btn sm light" onclick="UI.tab='produtos';render()">Voltar</button></div>
   ${R.descricao?`<p class="mu" style="margin-top:-4px">${esc(R.descricao)}</p>`:''}
   <div class="grid"><div><label>Fornecedor</label><input value="${esc(R.fornecedor)}" onchange="S.rascunho.fornecedor=this.value;save('rascunho')" placeholder="Ex.: Genco / Netuno"></div><div><label>Nº da nota (opcional)</label><input value="${esc(R.nota)}" onchange="S.rascunho.nota=this.value;save('rascunho')"></div></div>
+  <div class="grid"><div><label>Frete total da nota (R$)</label><input inputmode="decimal" value="${esc(R.frete||'')}" placeholder="0,00" onchange="S.rascunho.frete=this.value;save('rascunho');entTotais()"></div><div><label>ICMS (%)</label><input inputmode="decimal" value="${esc(R.icms??'')}" placeholder="${S.config.icmsPadrao||0}" onchange="S.rascunho.icms=this.value;save('rascunho');entTotais()"></div></div>
+  <p class="mu" style="margin:4px 0 0">O frete é dividido entre os produtos pelo valor de cada um. O custo real (compra + ICMS + frete) é o usado na margem e no lucro.</p>
   <button class="btn big dark" style="margin-top:10px" onclick="scanStart('multi',entAddCodigo)">📷 Escanear o que chegou</button><div class="row" style="margin-top:8px"><button class="btn light" style="flex:1" onclick="entBuscar()">🔎 Buscar cadastrado</button><button class="btn light" style="flex:1" onclick="entSet0()">+ Produto novo</button></div>
   <div class="card" style="margin-top:10px"><div class="row between wrap"><span class="mu" id="entTot"></span></div>
-  <div class="row" style="margin-top:6px"><input id="entMg" inputmode="decimal" placeholder="Margem % (ex.: 60)" value="${esc(R.margem||'')}" style="max-width:170px"><button class="btn sm light" onclick="entAplicarMargem()">Sugerir preços de venda</button></div>
+  <div class="row" style="margin-top:6px"><input id="entMg" inputmode="decimal" placeholder="Margem % (ex.: 40)" value="${esc(R.margem||'')}" style="max-width:170px"><button class="btn sm light" onclick="entAplicarMargem()">Sugerir preços de venda</button></div>
   <p class="mu" style="margin:6px 0 0">Preenche o preço de venda dos itens que têm custo e ainda estão sem preço.</p></div>
   ${R.itens.length?R.itens.map((it,i)=>{ const p=it.pid?prod(it.pid):null; return `<div class="card">
-    <div class="row between"><div class="grow">${p?`<b>${esc(p.nome)}</b><div class="mu">já cadastrado · estoque atual ${p.estoque} · venda ${fmt(p.preco)}</div>`:`<input value="${esc(it.nome)}" placeholder="Nome do produto *" onchange="entSet(${i},'nome',this.value)" style="font-weight:700"><div class="mu" style="margin-top:4px"><span class="badge or">novo</span> será cadastrado</div>`}</div><button class="ghost" onclick="S.rascunho.itens.splice(${i},1);save('rascunho');render()">🗑️</button></div>
+    <div class="row between"><label style="margin:0;cursor:pointer" title="Foto">${thumb(p&&p.foto?p:{foto:it.foto||fotoRepo(it.codigo,it.nome)})}<input type="file" accept="image/*" capture="environment" hidden onchange="entFoto(${i},this.files[0])"></label><div class="grow">${p?`<b>${esc(p.nome)}</b><div class="mu">já cadastrado · estoque atual ${p.estoque} · venda ${fmt(p.preco)}</div>`:`<input value="${esc(it.nome)}" placeholder="Nome do produto *" onchange="entSet(${i},'nome',this.value)" style="font-weight:700"><div class="mu" style="margin-top:4px"><span class="badge or">novo</span> será cadastrado</div>`}</div><button class="ghost" onclick="S.rascunho.itens.splice(${i},1);save('rascunho');render()">🗑️</button></div>
     ${!p?`<div class="grid"><div><label>Código de barras</label><input value="${esc(it.codigo)}" inputmode="numeric" onchange="entSet(${i},'codigo',this.value)"></div><div><label>Categoria</label><input list="catList2" value="${esc(it.categoria)}" onchange="entSet(${i},'categoria',this.value)"></div></div>`:''}
     <div class="grid" style="grid-template-columns:repeat(3,1fr)"><div><label>Qtd chegou *</label><input inputmode="decimal" value="${esc(it.qtd)}" placeholder="${esc(it.dica||'0')}" onchange="entSet(${i},'qtd',this.value)"></div><div><label>Custo unit.</label><input inputmode="decimal" value="${esc(it.custo)}" placeholder="R$" onchange="entSet(${i},'custo',this.value)"></div><div><label>Preço venda${p?'':' *'}</label><input inputmode="decimal" value="${esc(it.preco)}" placeholder="${p?String(p.preco).replace('.',','):'R$'}" onchange="entSet(${i},'preco',this.value)"></div></div>
     <div class="mu" id="entM${i}" style="margin-top:4px"></div></div>`; }).join(''):'<div class="card empty">Escaneie os produtos que chegaram ou toque em Buscar / + Novo</div>'}
   <datalist id="catList2">${CATS.map(c=>`<option value="${c}">`).join('')}</datalist>
-  ${R.itens.length?`<div style="height:84px"></div><div class="checkout"><div class="t"><small>Entrada · ${R.itens.length} produtos</small><b>${fmt(sum(R.itens,i=>num(i.qtd)*num(i.custo)))}</b></div><button class="btn green" onclick="entConfirmar()">✔ Dar entrada</button></div>`:''}
+  ${R.itens.length?`<div style="height:84px"></div><div class="checkout"><div class="t"><small>Entrada · ${R.itens.length} produtos</small><b>${fmt(sum(R.itens,i=>num(i.qtd)*num(i.custo))+num(R.frete))}</b></div><button class="btn green" onclick="entConfirmar()">✔ Dar entrada</button></div>`:''}
   ${H.length?`<h3>Últimas entradas</h3><div class="card list">${H.map(e=>`<div class="it"><div class="grow"><div class="nm">${dbr(e.data.slice(0,10))} · ${esc(e.fornecedor||'sem fornecedor')}${e.nota?' · NF '+esc(e.nota):''}</div><div class="mu">${e.itens.length} produtos · ${sum(e.itens,'qtd')} un</div></div><b>${fmt(e.total)}</b></div>`).join('')}</div>`:''}`;
 }
 after.entrada=()=>entTotais();
+async function entFoto(i,f){ try{ const d=await fotoArquivo(f); const it=S.rascunho.itens[i]; if(it.pid){ prod(it.pid).foto=d; save('produtos'); } else it.foto=d; save('rascunho'); render(); }catch(e){ toast('Não consegui ler a foto'); } }
 function entSet0(){ S.rascunho.itens.unshift({pid:null,nome:'',codigo:'',categoria:'',unidade:'un',qtd:'',custo:'',preco:'',dica:''}); save('rascunho'); render(); setTimeout(()=>document.querySelector('#view .card input')?.focus(),50); }
 function entBuscar(){ modal(`<div class="row between"><h2>Buscar produto cadastrado</h2><button class="ghost" onclick="closeModal()">✕</button></div><input id="eb_q" placeholder="Nome ou código" oninput="entBuscarR()" autocomplete="off"><div class="list" id="eb_r" style="margin-top:8px"></div>`); setTimeout(()=>$('#eb_q').focus(),50); }
 function entBuscarR(){ const q=norm($('#eb_q').value).trim(); const r=q?S.produtos.filter(p=>norm(p.nome).includes(q)||String(p.codigo||'').includes(q)).slice(0,30):[];
@@ -636,14 +664,16 @@ function entConfirmar(){ const R=S.rascunho; const its=R.itens;
   const semCusto=its.filter(i=>num(i.custo)<=0).length;
   if(semCusto&&!confirm(`${semCusto} produto(s) sem custo. Sem o custo o lucro desses itens não é calculado. Dar entrada assim mesmo?`)) return;
   const reg={id:R.id||uid(),data:new Date().toISOString(),fornecedor:R.fornecedor,nota:R.nota,itens:[],total:0};
-  its.forEach(i=>{ const q=num(i.qtd), c=num(i.custo), pv=num(i.preco); let p=i.pid?prod(i.pid):null;
-    if(!p){ p={id:uid(),nome:i.nome.trim(),codigo:String(i.codigo||'').trim(),categoria:i.categoria||'',unidade:i.unidade||'un',custo:c,preco:pv,precoDesc:0,estoque:0,estoqueMin:0,ativo:true,criado:reg.data}; S.produtos.push(p); }
-    else if(c>0){ p.custo=+p.estoque>0&&+p.custo>0?r2((p.estoque*p.custo+q*c)/(+p.estoque+q)):c; }
+  const crs=its.map(i=>entCustoReal(i)); const fr=num(R.frete), tot=sum(its,x=>num(x.qtd)*num(x.custo));
+  its.forEach((i,k)=>{ const q=num(i.qtd), c=num(i.custo), cr=crs[k], pv=num(i.preco); let p=i.pid?prod(i.pid):null; const fu=tot>0&&c>0?r2(fr*(c/tot)):0;
+    if(!p){ p={id:uid(),nome:i.nome.trim(),codigo:String(i.codigo||'').trim(),categoria:i.categoria||'',unidade:i.unidade||'un',custoCompra:c,icms:num(R.icms),frete:fu,custo:cr,preco:pv,precoDesc:0,estoque:0,estoqueMin:0,ativo:true,criado:reg.data,foto:i.foto||fotoRepo(i.codigo,i.nome)}; S.produtos.push(p); }
+    else if(c>0){ p.custoCompra=c; p.icms=num(R.icms); p.frete=fu; p.custo=+p.estoque>0&&+p.custo>0?r2((p.estoque*p.custo+q*cr)/(+p.estoque+q)):cr; }
     if(pv>0) p.preco=pv; p.estoque=r2(+p.estoque+q);
-    reg.itens.push({pid:p.id,nome:p.nome,qtd:q,custo:c}); });
+    reg.itens.push({pid:p.id,nome:p.nome,qtd:q,custo:c,custoReal:cr}); });
+  reg.frete=fr; reg.icms=num(R.icms);
   reg.total=r2(sum(reg.itens,i=>i.qtd*i.custo)); (S.entradas??=[]).push(reg);
   if(R.id){ (S.config.entradasAplicadas??=[]).push(R.id); ENT_PEND=ENT_PEND.filter(e=>e.id!==R.id); }
-  S.rascunho={id:'',fornecedor:'',nota:'',margem:'',itens:[]};
+  S.rascunho={id:'',fornecedor:'',nota:'',margem:'',frete:'',icms:'',itens:[]};
   save('produtos','entradas','rascunho','config'); UI.tab='produtos'; render(); toast(`Entrada feita: ${reg.itens.length} produtos no estoque ✅`,3500); }
 
 /* ================= TELA: financeiro ================= */
@@ -739,12 +769,13 @@ function vMais(){ const c=S.config;
     <label>Endereço da loja</label><input id="cf_end" value="${esc(c.endereco||'')}" placeholder="Rua…, nº… — Bairro — Cidade/TO">
     <div class="grid"><div><label>Validade do orçamento (dias)</label><input id="cf_val" inputmode="numeric" value="${c.orcValidade||7}"></div><div><label>Desconto no Pix (%)</label><input id="cf_pix" inputmode="decimal" value="${c.orcPixDesc||''}" placeholder="0 = não mostrar"></div></div>
     <label>Condições que aparecem no orçamento (uma por linha)</label><textarea id="cf_cond" rows="3">${esc(c.orcCondicoes||'')}</textarea>
+    <label>ICMS padrão nas compras (%)</label><input id="cf_icms" inputmode="decimal" value="${c.icmsPadrao||''}" placeholder="Ex.: 7 (pergunte ao seu contador)">
     <label>Meta de faturamento mensal (R$)</label><input id="cf_meta" inputmode="decimal" value="${c.metaMensal?String(c.metaMensal).replace('.',','):''}" placeholder="Ex.: 30000">
     <label>PIN do dono (protege Início, Financeiro, Mais e cadastro de produtos)</label><input id="cf_pin" type="password" inputmode="numeric" maxlength="8" value="${esc(c.pin)}" placeholder="deixe vazio para não usar">
     <label class="row"><input type="checkbox" id="cf_neg" ${c.estoqueNegativo?'checked':''} style="width:auto"> Permitir vender com estoque zerado</label>
     <br><button class="btn" data-act="saveCfg">Salvar</button></div>
   <div class="card"><b class="neg">Zona de perigo</b><p class="mu">Apaga todos os dados deste aparelho.</p><button class="btn red" data-act="wipe">Apagar tudo</button></div>
-  <p class="mu" style="text-align:center">Maia Construção · Sistema v1.4 · dados salvos neste aparelho</p>`; }
+  <p class="mu" style="text-align:center">Maia Construção · Sistema v1.5 · dados salvos neste aparelho</p>`; }
 function openCli(id,fromPdv=false){ const c=id?cli(id):{id:'',nome:'',telefone:'',tipo:'',obs:'',saldo:0};
   modal(`<div class="row between"><h2>${id?'Editar':'Novo'} cliente</h2><button class="ghost" onclick="closeModal()">✕</button></div>
   <label>Nome *</label><input id="cl_n" value="${esc(c.nome)}"><label>WhatsApp</label><input id="cl_t" inputmode="tel" value="${esc(c.telefone)}" placeholder="(63) 9…">
@@ -761,7 +792,7 @@ function delCli(id){ if(!confirm('Excluir cliente?')) return; S.clientes=S.clien
 /* ================= planilhas (Excel) ================= */
 function rowsAll(){
   return {
-    Produtos:S.produtos.map(p=>({Nome:p.nome,Codigo:p.codigo,Categoria:p.categoria,Unidade:p.unidade,Custo:+p.custo,Preco_Venda:+p.preco,Preco_Desconto:+p.precoDesc||'',Margem_pct:+p.preco?r2((p.preco-p.custo)/p.preco*100):0,Estoque:+p.estoque,Estoque_Min:+p.estoqueMin,Valor_Estoque_Custo:r2(Math.max(0,p.estoque)*p.custo),Ativo:p.ativo!==false?'sim':'não'})),
+    Produtos:S.produtos.map(p=>({Nome:p.nome,Codigo:p.codigo,Categoria:p.categoria,Unidade:p.unidade,Custo_Compra:+(p.custoCompra??p.custo),ICMS_pct:+p.icms||0,Frete_un:+p.frete||0,Custo_Real:+p.custo,Preco_Venda:+p.preco,Preco_Desconto:+p.precoDesc||'',Margem_pct:+p.preco?r2((p.preco-p.custo)/p.preco*100):0,Estoque:+p.estoque,Estoque_Min:+p.estoqueMin,Valor_Estoque_Custo:r2(Math.max(0,p.estoque)*p.custo),Ativo:p.ativo!==false?'sim':'não'})),
     Vendas:S.vendas.map(v=>({Numero:v.num,Data:dtbr(v.data),Cliente:v.clienteNome,Pagamento:v.pagamento,Subtotal:v.subtotal,Desconto_Extra:v.descontoExtra,Total:v.total,Custo:v.custoTotal,Lucro:v.lucro,Status:v.status})),
     Itens_Vendidos:S.vendas.flatMap(v=>v.itens.map(i=>({Venda:v.num,Data:dtbr(v.data),Produto:i.nome,Codigo:i.codigo,Qtd:i.qtd,Preco_Unit:i.preco,Usou_Desconto:i.desc?'sim':'não',Custo_Unit:i.custo,Total:r2(i.preco*i.qtd),Lucro:r2((i.preco-i.custo)*i.qtd),Status:v.status}))),
     Despesas:S.despesas.slice().sort((a,b)=>a.data.localeCompare(b.data)).map(d=>({Data:dbr(d.data),Descricao:d.descricao,Categoria:d.categoria,Valor:d.valor})),
@@ -859,7 +890,7 @@ const ACT={
   xlsx:()=>exportXlsx(), modeloXlsx:()=>modeloXlsx(), backup:()=>backup(),
   saveSheets:()=>{ Object.assign(S.config,{sheetsUrl:$('#cf_url').value.trim(),sheetsToken:$('#cf_tok').value.trim(),autoSync:$('#cf_auto').checked}); save('config'); toast('Configuração salva'); },
   pushNow:()=>{ ACT.saveSheets(); pushSheets(false); }, pullNow:()=>{ ACT.saveSheets(); pullSheets(); },
-  saveCfg:()=>{ Object.assign(S.config,{telefoneLoja:$('#cf_tel').value.trim(),endereco:$('#cf_end').value.trim(),orcValidade:Math.max(1,num($('#cf_val').value)||7),orcPixDesc:Math.max(0,Math.min(30,num($('#cf_pix').value))),orcCondicoes:$('#cf_cond').value,metaMensal:num($('#cf_meta').value),loja:$('#cf_loja').value.trim()||'Maia Construção',pin:$('#cf_pin').value.trim(),estoqueNegativo:$('#cf_neg').checked}); if(S.config.pin) UI.unlocked=true; save('config'); toast('Salvo'); render(); },
+  saveCfg:()=>{ Object.assign(S.config,{icmsPadrao:num($('#cf_icms').value),telefoneLoja:$('#cf_tel').value.trim(),endereco:$('#cf_end').value.trim(),orcValidade:Math.max(1,num($('#cf_val').value)||7),orcPixDesc:Math.max(0,Math.min(30,num($('#cf_pix').value))),orcCondicoes:$('#cf_cond').value,metaMensal:num($('#cf_meta').value),loja:$('#cf_loja').value.trim()||'Maia Construção',pin:$('#cf_pin').value.trim(),estoqueNegativo:$('#cf_neg').checked}); if(S.config.pin) UI.unlocked=true; save('config'); toast('Salvo'); render(); },
   wipe:()=>{ if(prompt('Digite APAGAR para confirmar')!=='APAGAR') return; ['produtos','vendas','despesas','clientes','recebimentos'].forEach(k=>{S[k]=[];DB.set(k,[]);}); toast('Dados apagados'); render(); },
   scanStop:()=>scanStop()
 };
@@ -867,7 +898,7 @@ document.addEventListener('click',e=>{ const el=e.target.closest('[data-act]'); 
 document.addEventListener('click',e=>{ if(!e.target.closest('.search')){ const r=$('#pdvRes'); if(r) r.innerHTML=''; } });
 
 /* ================= início ================= */
-(async()=>{ await load(); UI.tab=S.config.pin?'vender':'inicio'; render(); checarEntradas();
+(async()=>{ await load(); UI.tab=S.config.pin?'vender':'inicio'; render(); checarEntradas(); aplicarFotosRepo();
   if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
   try{ navigator.storage?.persist?.(); }catch(e){}
 })();
