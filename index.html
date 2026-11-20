@@ -1000,7 +1000,7 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.search')){ const r
 
 /* ================= início ================= */
 (async()=>{ await load(); UI.tab=S.config.pin?'vender':'inicio'; render(); nuvemIniciar();
-  if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if('serviceWorker' in navigator && location.protocol.startsWith('http')){ navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{ r.update(); setInterval(()=>r.update(),30*60*1000); }).catch(()=>{}); let rl=false; navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(!rl&&navigator.serviceWorker.controller){ rl=true; if(!UI.cart.length&&$('#modal').hidden) location.reload(); } }); }
   try{ navigator.storage?.persist?.(); }catch(e){}
 })();
 </script>
