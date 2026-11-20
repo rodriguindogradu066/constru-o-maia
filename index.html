@@ -157,11 +157,11 @@ const DB={ db:null,
   set(k,v){ if(!this.db){ try{localStorage.setItem('maia_'+k,JSON.stringify(v))}catch(e){} return Promise.resolve(); }
     return new Promise(res=>{ const tx=this.db.transaction('kv','readwrite'); tx.objectStore('kv').put(JSON.parse(JSON.stringify(v)),k); tx.oncomplete=res; tx.onerror=res; }); }
 };
-const S={ produtos:[], vendas:[], despesas:[], clientes:[], recebimentos:[], orcamentos:[],
+const S={ produtos:[], vendas:[], despesas:[], clientes:[], recebimentos:[], orcamentos:[], entradas:[], rascunho:null,
   config:{loja:'Maia Construção', pin:'', sheetsUrl:'', sheetsToken:'', autoSync:true, ultimaSync:'', estoqueNegativo:true, orcValidade:7, orcPixDesc:0, telefoneLoja:'', endereco:'', orcCondicoes:'Pagamento: Pix, dinheiro, débito ou crédito.\nEntrega: consulte o frete para sua região.\nRetirada na loja sem custo.'} };
-const KEYS=['produtos','vendas','despesas','clientes','recebimentos','orcamentos','config'];
+const KEYS=['produtos','vendas','despesas','clientes','recebimentos','orcamentos','entradas','rascunho','config'];
 async function load(){ await DB.open(); for(const k of KEYS){ const v=await DB.get(k); if(v!==undefined&&v!==null) S[k]= k==='config'?{...S.config,...v}:v; } }
-function save(...keys){ keys.forEach(k=>DB.set(k,S[k])); if(keys.some(k=>k!=='config')) scheduleSync(); }
+function save(...keys){ keys.forEach(k=>DB.set(k,S[k])); if(keys.some(k=>k!=='config'&&k!=='rascunho')) scheduleSync(); }
 
 const CATS=['Cimento e Argamassa','Hidráulica','Elétrica','Tintas','Piscinas - Químicos','Piscinas - Acessórios','Pingadeiras','Ferragens e Ferramentas','Acabamento','Outros'];
 const DCATS=['Aluguel','Energia','Água','Internet/Telefone','Funcionários','Impostos','Frete','Embalagens','Manutenção','Marketing','Pró-labore','Outros'];
@@ -184,7 +184,7 @@ function render(){
   const v=$('#view');
   UI.cmode=UI.tab==='orcamento'?'orc':'venda';
   if(PROTECTED.includes(UI.tab)&&needPin()){ v.innerHTML=vLock(); setTimeout(()=>$('#pinIn')?.focus(),50); return; }
-  v.innerHTML=({inicio:vInicio,vender:vVender,orcamento:vVender,produtos:vProdutos,financeiro:vFinanceiro,mais:vMais})[UI.tab]();
+  v.innerHTML=({inicio:vInicio,vender:vVender,orcamento:vVender,entrada:vEntrada,produtos:vProdutos,financeiro:vFinanceiro,mais:vMais})[UI.tab]();
   after[UI.tab]?.();
 }
 const after={};
@@ -248,7 +248,7 @@ function vInicio(){
   const parados=orcAbertos().filter(o=>diasDesde(o.data)>=2); if(parados.length) alertas.push(`📝 <b>${parados.length}</b> orçamento(s) sem resposta há 2+ dias (${fmt(sum(parados,'total'))}) — <a href="#" onclick="event.preventDefault();orcList('aberto')" style="color:var(--or2);font-weight:700">cobrar agora</a>`);
   const om=S.orcamentos.filter(o=>new Date(o.data)>=a&&new Date(o.data)<b); const oAp=om.filter(o=>o.status==='aprovado'); const oPer=om.filter(o=>o.status==='perdido'); const motivos={}; oPer.forEach(o=>motivos[o.motivo]=(motivos[o.motivo]||0)+1); const topMot=Object.entries(motivos).sort((x,y)=>y[1]-x[1])[0];
   if(mc.desp&&mc.fat<equilibrio) alertas.push(`⚖️ Faltam <b>${fmt(equilibrio-mc.fat)}</b> em vendas para cobrir as despesas do mês`);
-  return `<h2>Como está a loja</h2>${periodChips()}
+  return `${entBanner()}<h2>Como está a loja</h2>${periodChips()}
   <div class="hero">
     <div><small>Faturamento</small><b>${fmt(c.fat)}</b>${delta(c.fat,pc.fat,lb)}</div>
     <div><small>Lucro líquido</small><b style="color:${c.liq>=0?'#4fd18b':'#ff7b7b'}">${fmt(c.liq)}</b>${delta(c.liq,pc.liq,lb)}</div>
@@ -523,7 +523,7 @@ function vProdutos(){
   let l=S.produtos.filter(p=>(!UI.pcat||p.categoria===UI.pcat)&&(!q||norm(p.nome).includes(q)||String(p.codigo||'').includes(q)));
   l.sort((a,b)=>a.nome.localeCompare(b.nome));
   const cats=[...new Set(S.produtos.map(p=>p.categoria).filter(Boolean))];
-  return `<div class="row between"><h2>Produtos <span class="mu">(${S.produtos.length})</span></h2><button class="btn" data-act="newProd">+ Novo</button></div>
+  return `${entBanner()}<div class="row between"><h2>Produtos <span class="mu">(${S.produtos.length})</span></h2><span class="row"><button class="btn light" onclick="entNova()">📥 Entrada</button><button class="btn" data-act="newProd">+ Novo</button></span></div>
   <div class="row"><input placeholder="🔎 Nome ou código…" value="${esc(UI.pq)}" oninput="UI.pq=this.value;clearTimeout(window._pq);window._pq=setTimeout(()=>{render();const i=document.querySelector('#view input');i.focus();i.setSelectionRange(i.value.length,i.value.length)},250)"><button class="btn dark" data-act="scanFind" title="Escanear">📷</button></div>
   <div class="chips" style="margin-top:8px"><button class="chip ${!UI.pcat?'on':''}" data-act="pcat" data-c="">Todos</button>${cats.map(c=>`<button class="chip ${UI.pcat===c?'on':''}" data-act="pcat" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div>
   <div class="card list" style="margin-top:8px">${l.length?l.slice(0,300).map(p=>{ const m=+p.preco?((p.preco-p.custo)/p.preco*100):0; const low=+p.estoque<=+p.estoqueMin;
@@ -578,6 +578,73 @@ function entradaEstoque(id){ const p=prod(id);
 function doEntrada(id){ const p=prod(id), q=num($('#en_q').value), c=num($('#en_c').value); if(q<=0) return toast('Quantidade inválida');
   if(c>0){ p.custo = $('#en_med').checked && +p.estoque>0 ? r2((p.estoque*p.custo+q*c)/(+p.estoque+q)) : c; }
   p.estoque=r2(+p.estoque+q); save('produtos'); closeModal(); toast('Estoque atualizado: '+p.estoque); render(); }
+
+/* ================= ENTRADA DE MERCADORIA ================= */
+let ENT_PEND=[];
+async function checarEntradas(){ try{ const r=await fetch('entradas.json?t='+Date.now(),{cache:'no-store'}); if(!r.ok) return; const j=await r.json();
+  const feitas=S.config.entradasAplicadas||[]; ENT_PEND=(j.entradas||[]).filter(e=>!feitas.includes(e.id));
+  if(ENT_PEND.length&&['inicio','produtos'].includes(UI.tab)) render(); }catch(e){} }
+function entBanner(){ if(!ENT_PEND.length) return ''; const e=ENT_PEND[0];
+  return `<div class="card" style="border-left:4px solid var(--or);background:#fff4ec;margin-bottom:10px"><div class="row between wrap"><div><b>📥 Chegou mercadoria para conferir</b><div class="mu">${esc(e.descricao||'')} · ${e.itens.length} produtos</div></div><button class="btn" onclick="entAbrirPendente('${e.id}')">Conferir e dar entrada</button></div></div>`; }
+function entNova(){ if(!canEdit()) return; if(!S.rascunho||!S.rascunho.itens) S.rascunho={id:'',fornecedor:'',nota:'',margem:'',itens:[]}; UI.tab='entrada'; render(); }
+function entAbrirPendente(id){ if(!canEdit()) return; const e=ENT_PEND.find(x=>x.id===id); if(!e) return;
+  if(S.rascunho?.itens?.length&&S.rascunho.id!==id&&!confirm('Você já tem uma entrada em andamento. Substituir por esta?')) return;
+  if(S.rascunho?.id!==id) S.rascunho={id:e.id,fornecedor:e.fornecedor||'',nota:'',margem:'',descricao:e.descricao||'',itens:e.itens.map(i=>{ const p=entAchar(i.codigo,i.nome); return {pid:p?.id||null,nome:p?p.nome:i.nome,codigo:i.codigo||p?.codigo||'',categoria:i.categoria||p?.categoria||'',unidade:i.unidade||p?.unidade||'un',qtd:'',custo:'',preco:'',dica:i.dica||''}; })};
+  save('rascunho'); UI.tab='entrada'; render(); }
+function entAchar(cod,nome){ return S.produtos.find(p=>(cod&&String(p.codigo)===String(cod)))||(nome?S.produtos.find(p=>norm(p.nome)===norm(nome)):null); }
+function entAddProduto(pid){ const p=prod(pid); const R=S.rascunho; const ex=R.itens.find(i=>i.pid===pid); if(ex){ toast('Já está na lista'); return; }
+  R.itens.unshift({pid,nome:p.nome,codigo:p.codigo||'',categoria:p.categoria||'',unidade:p.unidade||'un',qtd:'',custo:'',preco:'',dica:''}); save('rascunho'); }
+function entAddCodigo(code){ const R=S.rascunho; code=String(code).trim(); const it=R.itens.find(i=>String(i.codigo)===code);
+  if(it){ it.qtd=String(num(it.qtd)+1); save('rascunho'); $('#scanInfo').innerHTML=`✅ <b>${esc(it.nome||'Produto novo')}</b> — qtd ${it.qtd}`; return; }
+  const p=S.produtos.find(p=>String(p.codigo)===code);
+  R.itens.unshift(p?{pid:p.id,nome:p.nome,codigo:code,categoria:p.categoria||'',unidade:p.unidade||'un',qtd:'1',custo:'',preco:'',dica:''}:{pid:null,nome:'',codigo:code,categoria:'',unidade:'un',qtd:'1',custo:'',preco:'',dica:''});
+  save('rascunho'); $('#scanInfo').innerHTML=p?`✅ <b>${esc(p.nome)}</b> adicionado`:`🆕 Código ${esc(code)} — produto novo, preencha o nome depois`; }
+function entSet(i,k,v){ S.rascunho.itens[i][k]=v; save('rascunho'); if(['custo','preco','qtd'].includes(k)) entTotais(); }
+function entTotais(){ const R=S.rascunho; const el=$('#entTot'); if(el) el.innerHTML=`${R.itens.length} produtos · ${sum(R.itens,i=>num(i.qtd))} unidades · compra <b>${fmt(sum(R.itens,i=>num(i.qtd)*num(i.custo)))}</b>`;
+  R.itens.forEach((it,i)=>{ const m=$('#entM'+i); if(m){ const c=num(it.custo),pv=num(it.preco)||(it.pid?+prod(it.pid)?.preco:0); m.innerHTML=c&&pv?`margem <b class="${pv>c?'pos':'neg'}">${pct((pv-c)/pv*100)}</b>`:''; } }); }
+function entAplicarMargem(){ const m=num($('#entMg').value); if(m<=0) return toast('Digite a margem em %'); S.rascunho.margem=String(m); let n=0;
+  S.rascunho.itens.forEach(i=>{ if(num(i.custo)>0&&!num(i.preco)){ i.preco=String(r2(num(i.custo)*(1+m/100))).replace('.',','); n++; } }); save('rascunho'); render(); toast(n?`Preço sugerido em ${n} produto(s)`:'Preencha o custo primeiro'); }
+function vEntrada(){
+  if(needPin()) return vLock(); const R=S.rascunho||(S.rascunho={id:'',fornecedor:'',nota:'',margem:'',itens:[]}); const H=(S.entradas||[]).slice(-8).reverse();
+  return `<div class="row between"><h2>📥 Entrada de mercadoria</h2><button class="btn sm light" onclick="UI.tab='produtos';render()">Voltar</button></div>
+  ${R.descricao?`<p class="mu" style="margin-top:-4px">${esc(R.descricao)}</p>`:''}
+  <div class="grid"><div><label>Fornecedor</label><input value="${esc(R.fornecedor)}" onchange="S.rascunho.fornecedor=this.value;save('rascunho')" placeholder="Ex.: Genco / Netuno"></div><div><label>Nº da nota (opcional)</label><input value="${esc(R.nota)}" onchange="S.rascunho.nota=this.value;save('rascunho')"></div></div>
+  <button class="btn big dark" style="margin-top:10px" onclick="scanStart('multi',entAddCodigo)">📷 Escanear o que chegou</button><div class="row" style="margin-top:8px"><button class="btn light" style="flex:1" onclick="entBuscar()">🔎 Buscar cadastrado</button><button class="btn light" style="flex:1" onclick="entSet0()">+ Produto novo</button></div>
+  <div class="card" style="margin-top:10px"><div class="row between wrap"><span class="mu" id="entTot"></span></div>
+  <div class="row" style="margin-top:6px"><input id="entMg" inputmode="decimal" placeholder="Margem % (ex.: 60)" value="${esc(R.margem||'')}" style="max-width:170px"><button class="btn sm light" onclick="entAplicarMargem()">Sugerir preços de venda</button></div>
+  <p class="mu" style="margin:6px 0 0">Preenche o preço de venda dos itens que têm custo e ainda estão sem preço.</p></div>
+  ${R.itens.length?R.itens.map((it,i)=>{ const p=it.pid?prod(it.pid):null; return `<div class="card">
+    <div class="row between"><div class="grow">${p?`<b>${esc(p.nome)}</b><div class="mu">já cadastrado · estoque atual ${p.estoque} · venda ${fmt(p.preco)}</div>`:`<input value="${esc(it.nome)}" placeholder="Nome do produto *" onchange="entSet(${i},'nome',this.value)" style="font-weight:700"><div class="mu" style="margin-top:4px"><span class="badge or">novo</span> será cadastrado</div>`}</div><button class="ghost" onclick="S.rascunho.itens.splice(${i},1);save('rascunho');render()">🗑️</button></div>
+    ${!p?`<div class="grid"><div><label>Código de barras</label><input value="${esc(it.codigo)}" inputmode="numeric" onchange="entSet(${i},'codigo',this.value)"></div><div><label>Categoria</label><input list="catList2" value="${esc(it.categoria)}" onchange="entSet(${i},'categoria',this.value)"></div></div>`:''}
+    <div class="grid" style="grid-template-columns:repeat(3,1fr)"><div><label>Qtd chegou *</label><input inputmode="decimal" value="${esc(it.qtd)}" placeholder="${esc(it.dica||'0')}" onchange="entSet(${i},'qtd',this.value)"></div><div><label>Custo unit.</label><input inputmode="decimal" value="${esc(it.custo)}" placeholder="R$" onchange="entSet(${i},'custo',this.value)"></div><div><label>Preço venda${p?'':' *'}</label><input inputmode="decimal" value="${esc(it.preco)}" placeholder="${p?String(p.preco).replace('.',','):'R$'}" onchange="entSet(${i},'preco',this.value)"></div></div>
+    <div class="mu" id="entM${i}" style="margin-top:4px"></div></div>`; }).join(''):'<div class="card empty">Escaneie os produtos que chegaram ou toque em Buscar / + Novo</div>'}
+  <datalist id="catList2">${CATS.map(c=>`<option value="${c}">`).join('')}</datalist>
+  ${R.itens.length?`<div style="height:84px"></div><div class="checkout"><div class="t"><small>Entrada · ${R.itens.length} produtos</small><b>${fmt(sum(R.itens,i=>num(i.qtd)*num(i.custo)))}</b></div><button class="btn green" onclick="entConfirmar()">✔ Dar entrada</button></div>`:''}
+  ${H.length?`<h3>Últimas entradas</h3><div class="card list">${H.map(e=>`<div class="it"><div class="grow"><div class="nm">${dbr(e.data.slice(0,10))} · ${esc(e.fornecedor||'sem fornecedor')}${e.nota?' · NF '+esc(e.nota):''}</div><div class="mu">${e.itens.length} produtos · ${sum(e.itens,'qtd')} un</div></div><b>${fmt(e.total)}</b></div>`).join('')}</div>`:''}`;
+}
+after.entrada=()=>entTotais();
+function entSet0(){ S.rascunho.itens.unshift({pid:null,nome:'',codigo:'',categoria:'',unidade:'un',qtd:'',custo:'',preco:'',dica:''}); save('rascunho'); render(); setTimeout(()=>document.querySelector('#view .card input')?.focus(),50); }
+function entBuscar(){ modal(`<div class="row between"><h2>Buscar produto cadastrado</h2><button class="ghost" onclick="closeModal()">✕</button></div><input id="eb_q" placeholder="Nome ou código" oninput="entBuscarR()" autocomplete="off"><div class="list" id="eb_r" style="margin-top:8px"></div>`); setTimeout(()=>$('#eb_q').focus(),50); }
+function entBuscarR(){ const q=norm($('#eb_q').value).trim(); const r=q?S.produtos.filter(p=>norm(p.nome).includes(q)||String(p.codigo||'').includes(q)).slice(0,30):[];
+  $('#eb_r').innerHTML=r.map(p=>`<div class="it" onclick="entAddProduto('${p.id}');closeModal();render()"><div class="grow"><div class="nm">${esc(p.nome)}</div><div class="mu">estoque ${p.estoque}</div></div></div>`).join('')||(q?'<div class="empty">Nada encontrado — use + Novo</div>':''); }
+function entConfirmar(){ const R=S.rascunho; const its=R.itens;
+  for(const [k,i] of its.entries()){ const nm=i.pid?prod(i.pid)?.nome:i.nome;
+    if(!i.pid&&!String(i.nome).trim()) return toast(`Item ${k+1}: falta o nome`);
+    if(num(i.qtd)<=0) return toast(`${nm||'Item '+(k+1)}: falta a quantidade`);
+    if(!i.pid&&num(i.preco)<=0) return toast(`${nm}: falta o preço de venda`);
+    if(i.codigo&&S.produtos.some(p=>String(p.codigo)===String(i.codigo)&&p.id!==i.pid)) return toast(`Código ${i.codigo} já é de outro produto`); }
+  const semCusto=its.filter(i=>num(i.custo)<=0).length;
+  if(semCusto&&!confirm(`${semCusto} produto(s) sem custo. Sem o custo o lucro desses itens não é calculado. Dar entrada assim mesmo?`)) return;
+  const reg={id:R.id||uid(),data:new Date().toISOString(),fornecedor:R.fornecedor,nota:R.nota,itens:[],total:0};
+  its.forEach(i=>{ const q=num(i.qtd), c=num(i.custo), pv=num(i.preco); let p=i.pid?prod(i.pid):null;
+    if(!p){ p={id:uid(),nome:i.nome.trim(),codigo:String(i.codigo||'').trim(),categoria:i.categoria||'',unidade:i.unidade||'un',custo:c,preco:pv,precoDesc:0,estoque:0,estoqueMin:0,ativo:true,criado:reg.data}; S.produtos.push(p); }
+    else if(c>0){ p.custo=+p.estoque>0&&+p.custo>0?r2((p.estoque*p.custo+q*c)/(+p.estoque+q)):c; }
+    if(pv>0) p.preco=pv; p.estoque=r2(+p.estoque+q);
+    reg.itens.push({pid:p.id,nome:p.nome,qtd:q,custo:c}); });
+  reg.total=r2(sum(reg.itens,i=>i.qtd*i.custo)); (S.entradas??=[]).push(reg);
+  if(R.id){ (S.config.entradasAplicadas??=[]).push(R.id); ENT_PEND=ENT_PEND.filter(e=>e.id!==R.id); }
+  S.rascunho={id:'',fornecedor:'',nota:'',margem:'',itens:[]};
+  save('produtos','entradas','rascunho','config'); UI.tab='produtos'; render(); toast(`Entrada feita: ${reg.itens.length} produtos no estoque ✅`,3500); }
 
 /* ================= TELA: financeiro ================= */
 function vFinanceiro(){
@@ -677,7 +744,7 @@ function vMais(){ const c=S.config;
     <label class="row"><input type="checkbox" id="cf_neg" ${c.estoqueNegativo?'checked':''} style="width:auto"> Permitir vender com estoque zerado</label>
     <br><button class="btn" data-act="saveCfg">Salvar</button></div>
   <div class="card"><b class="neg">Zona de perigo</b><p class="mu">Apaga todos os dados deste aparelho.</p><button class="btn red" data-act="wipe">Apagar tudo</button></div>
-  <p class="mu" style="text-align:center">Maia Construção · Sistema v1.3 · dados salvos neste aparelho</p>`; }
+  <p class="mu" style="text-align:center">Maia Construção · Sistema v1.4 · dados salvos neste aparelho</p>`; }
 function openCli(id,fromPdv=false){ const c=id?cli(id):{id:'',nome:'',telefone:'',tipo:'',obs:'',saldo:0};
   modal(`<div class="row between"><h2>${id?'Editar':'Novo'} cliente</h2><button class="ghost" onclick="closeModal()">✕</button></div>
   <label>Nome *</label><input id="cl_n" value="${esc(c.nome)}"><label>WhatsApp</label><input id="cl_t" inputmode="tel" value="${esc(c.telefone)}" placeholder="(63) 9…">
@@ -700,6 +767,7 @@ function rowsAll(){
     Despesas:S.despesas.slice().sort((a,b)=>a.data.localeCompare(b.data)).map(d=>({Data:dbr(d.data),Descricao:d.descricao,Categoria:d.categoria,Valor:d.valor})),
     Clientes:S.clientes.map(c=>({Nome:c.nome,WhatsApp:c.telefone,Tipo:c.tipo,Saldo_Fiado:c.saldo,Obs:c.obs})),
     Orcamentos:S.orcamentos.map(o=>({Numero:o.num,Data:dtbr(o.data),Cliente:o.clienteNome,WhatsApp:o.clienteTel,Obra:o.ref,Itens:o.itens.length,Total:o.total,Lucro_Previsto:r2(o.total-(o.custoTotal||0)),Validade:dbr(o.validade),Status:orcStatus(o),Motivo_Perda:o.motivo||'',Follow_ups:(o.followups||[]).length})),
+    Entradas:(S.entradas||[]).flatMap(e=>e.itens.map(i=>({Data:dtbr(e.data),Fornecedor:e.fornecedor,Nota:e.nota,Produto:i.nome,Qtd:i.qtd,Custo_Unit:i.custo,Total:r2(i.qtd*i.custo)}))),
     Resumo_Mensal:resumoMensal()
   };
 }
@@ -756,7 +824,7 @@ async function scanStart(mode,cb){
 }
 function onScan(code){ const t=Date.now(); if(code===lastCode&&t-lastT<1800) return; lastCode=code; lastT=t; beep(); try{navigator.vibrate(60)}catch(e){}
   if(scanMode==='single'){ scanStop().then(()=>scanCb(code)); } else scanCb(code); }
-async function scanStop(){ $('#scan').hidden=true; if(scanner){ const s=scanner; scanner=null; try{ await s.stop(); s.clear(); }catch(e){} } if((UI.tab==='vender'||UI.tab==='orcamento')&&$('#modal').hidden) render(); }
+async function scanStop(){ $('#scan').hidden=true; if(scanner){ const s=scanner; scanner=null; try{ await s.stop(); s.clear(); }catch(e){} } if(['vender','orcamento','entrada'].includes(UI.tab)&&$('#modal').hidden) render(); }
 
 /* ================= modal ================= */
 function modal(h){ $('#mBody').innerHTML=h; $('#modal').hidden=false; }
@@ -799,7 +867,7 @@ document.addEventListener('click',e=>{ const el=e.target.closest('[data-act]'); 
 document.addEventListener('click',e=>{ if(!e.target.closest('.search')){ const r=$('#pdvRes'); if(r) r.innerHTML=''; } });
 
 /* ================= início ================= */
-(async()=>{ await load(); UI.tab=S.config.pin?'vender':'inicio'; render();
+(async()=>{ await load(); UI.tab=S.config.pin?'vender':'inicio'; render(); checarEntradas();
   if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
   try{ navigator.storage?.persist?.(); }catch(e){}
 })();

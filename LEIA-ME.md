@@ -1,4 +1,6 @@
-# Sistema Maia Construção v1.3 — como instalar
+# Sistema Maia Construção v1.4 — como instalar
+
+**Novidade da v1.4 — Entrada de mercadoria:** em **Produtos → 📥 Entrada**, escaneie ou busque o que chegou, coloque quantidade, custo e preço de venda (ou use *Sugerir preços* pela margem) e toque *Dar entrada*: produtos novos são cadastrados e o estoque sobe de uma vez, com custo médio. Entregas preparadas no arquivo `entradas.json` aparecem sozinhas no sistema como "Chegou mercadoria para conferir".
 
 **Novidade da v1.3:** botão próprio **📝 Orçamento** na barra de baixo (ao lado do Vender), com carrinho separado do caixa e a lista de orçamentos na mesma tela.
 
@@ -18,7 +20,7 @@
 ## 1. Colocar no ar (Hostinger)
 1. No hPanel, crie um subdomínio, ex.: `sistema.seudominio.com.br` (ou uma pasta `/sistema`).
 2. Ative o **SSL (https)**. A câmera **só funciona com https**.
-3. No Gerenciador de Arquivos, envie **todos** os arquivos desta pasta (index.html, manifest.json, sw.js, icon-192.png, icon-512.png, logo.png) para a pasta do subdomínio.
+3. No Gerenciador de Arquivos, envie **todos** os arquivos desta pasta (index.html, manifest.json, sw.js, icon-192.png, icon-512.png, logo.png, entradas.json) para a pasta do subdomínio.
 4. Abra o endereço no Chrome do celular.
 
 ## 2. Deixar como aplicativo no Samsung

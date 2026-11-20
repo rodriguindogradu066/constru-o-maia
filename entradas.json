@@ -1,0 +1,27 @@
+{
+  "entradas": [
+    {
+      "id": "2026-11-20-piscina",
+      "data": "2026-11-20",
+      "fornecedor": "",
+      "descricao": "Entrega de 20/11 — produtos para piscina (Genco, Netuno) e pingadeiras",
+      "itens": [
+        {"nome": "Aspirador Asa Delta Netuno", "codigo": "7898931842065", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "foto: ~4"},
+        {"nome": "Escova curva Netuno", "codigo": "7898931842058", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "confira"},
+        {"nome": "Peneira metálica Netuno", "codigo": "7898931842119", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "foto: 2 pilhas"},
+        {"nome": "Adaptador rosca grossa (mangueira)", "codigo": "7898931842232", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "foto: ~7"},
+        {"nome": "Ponteira PVC rosca direita", "codigo": "7898931842133", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "foto: ~4"},
+        {"nome": "Reagente AT1 Genco 23ml", "codigo": "7896544401716", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~12"},
+        {"nome": "Limpa bordas Genco 1L", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~12"},
+        {"nome": "Algicida de manutenção Genco 1L", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~4"},
+        {"nome": "Genpool algicida sem cobre Genco 1L", "codigo": "7896544403727", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~11"},
+        {"nome": "Clarificante Genfloc Genco 1L", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~2"},
+        {"nome": "Ultra Clean detergente neutro p/ borda 500ml", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~3"},
+        {"nome": "Redutor de pH e alcalinidade Genco 1L", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~1"},
+        {"nome": "Algicida choque Hidroazul 1L", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~1"},
+        {"nome": "Limpeza pesada M&M", "codigo": "7898927843144", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "confira"},
+        {"nome": "Pingadeira de concreto", "codigo": "", "categoria": "Pingadeiras", "unidade": "un", "dica": "foto: ~10"}
+      ]
+    }
+  ]
+}
