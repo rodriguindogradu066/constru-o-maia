@@ -163,7 +163,7 @@ const S={ produtos:[], vendas:[], despesas:[], clientes:[], recebimentos:[], orc
   config:{loja:'Maia Construção', pin:'', sheetsUrl:'', sheetsToken:'', autoSync:true, ultimaSync:'', estoqueNegativo:true, orcValidade:7, orcPixDesc:0, telefoneLoja:'', endereco:'', orcCondicoes:'Pagamento: Pix, dinheiro, débito ou crédito.\nEntrega: consulte o frete para sua região.\nRetirada na loja sem custo.'} };
 const KEYS=['produtos','vendas','despesas','clientes','recebimentos','orcamentos','entradas','rascunho','config'];
 async function load(){ await DB.open(); for(const k of KEYS){ const v=await DB.get(k); if(v!==undefined&&v!==null) S[k]= k==='config'?{...S.config,...v}:v; } }
-function save(...keys){ keys.forEach(k=>DB.set(k,S[k])); if(keys.some(k=>k!=='config'&&k!=='rascunho')) scheduleSync(); }
+function save(...keys){ keys.forEach(k=>DB.set(k,S[k])); nuvemSalvar(keys); if(keys.some(k=>k!=='config'&&k!=='rascunho')) scheduleSync(); }
 
 const CATS=['Cimento e Argamassa','Hidráulica','Elétrica','Tintas','Piscinas - Químicos','Piscinas - Acessórios','Pingadeiras','Ferragens e Ferramentas','Acabamento','Outros'];
 const DCATS=['Aluguel','Energia','Água','Internet/Telefone','Funcionários','Impostos','Frete','Embalagens','Manutenção','Marketing','Pró-labore','Outros'];
@@ -185,11 +185,94 @@ function render(){
   $('#sub').textContent='Sistema da loja';
   const v=$('#view');
   UI.cmode=UI.tab==='orcamento'?'orc':'venda';
+  $('#nav').hidden=N.ativo&&N.estado!=='ok';
+  if(N.ativo&&N.estado!=='ok'){ v.innerHTML=nuvemTela(); return; }
   if(PROTECTED.includes(UI.tab)&&needPin()){ v.innerHTML=vLock(); setTimeout(()=>$('#pinIn')?.focus(),50); return; }
   v.innerHTML=({inicio:vInicio,vender:vVender,orcamento:vVender,entrada:vEntrada,produtos:vProdutos,financeiro:vFinanceiro,mais:vMais})[UI.tab]();
   after[UI.tab]?.();
 }
 const after={};
+
+/* ================= NUVEM (Firebase) — um banco só para todos os aparelhos ================= */
+const FB_CONFIG={apiKey:"AIzaSyB6geWc-iIvlm6QsnvfeQeFoq2rilygcmk",authDomain:"maiaconstrucaoo-9e7d0.firebaseapp.com",projectId:"maiaconstrucaoo-9e7d0",storageBucket:"maiaconstrucaoo-9e7d0.firebasestorage.app",messagingSenderId:"888230711810",appId:"1:888230711810:web:e1b663fff4134916db8d1b"};
+const FB_V='10.12.2';
+const NCOLS=['produtos','vendas','despesas','clientes','recebimentos','orcamentos','entradas'];
+const N={ativo:true,f:null,auth:null,db:null,user:null,estado:'carregando',erro:'',cache:{},unsub:[],ok:false,renderPend:false};
+const ORDEM={vendas:'data',orcamentos:'data',entradas:'data',recebimentos:'data',despesas:'data'};
+const limpo=o=>JSON.parse(JSON.stringify(o));
+async function nuvemCarregarSDK(){
+  if(window.FB_MOCK) return window.FB_MOCK;
+  const b=`https://www.gstatic.com/firebasejs/${FB_V}/`;
+  const [A,U,F]=await Promise.all([import(b+'firebase-app.js'),import(b+'firebase-auth.js'),import(b+'firebase-firestore.js')]);
+  const app=A.initializeApp(FB_CONFIG); const auth=U.getAuth(app);
+  let db; try{ db=F.initializeFirestore(app,{localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})}); }catch(e){ db=F.getFirestore(app); }
+  return {
+    auth, db,
+    onUser:cb=>U.onAuthStateChanged(auth,cb),
+    entrar:async()=>{ const p=new U.GoogleAuthProvider(); p.setCustomParameters({prompt:'select_account'}); try{ await U.signInWithPopup(auth,p); }catch(e){ if(/popup|cancelled|blocked|operation-not-supported/.test(e.code||'')) await U.signInWithRedirect(auth,p); else throw e; } },
+    redirectResult:()=>U.getRedirectResult(auth).catch(()=>null),
+    sair:()=>U.signOut(auth),
+    getMeta:async()=>{ const s=await F.getDoc(F.doc(db,'meta','info')); return s.exists()?s.data():null; },
+    setMeta:d=>F.setDoc(F.doc(db,'meta','info'),d,{merge:true}),
+    ouvirCol:(c,cb,err)=>F.onSnapshot(F.collection(db,c),{includeMetadataChanges:false},s=>cb(s.docs.map(d=>d.data()),s.metadata.hasPendingWrites,s.metadata.fromCache),err),
+    ouvirConfig:(cb,err)=>F.onSnapshot(F.doc(db,'meta','config'),s=>cb(s.exists()?s.data():null,s.metadata.hasPendingWrites),err),
+    salvarConfig:d=>F.setDoc(F.doc(db,'meta','config'),d),
+    lote:async ops=>{ for(let i=0;i<ops.length;i+=400){ const w=F.writeBatch(db);
+      ops.slice(i,i+400).forEach(o=>{ const r=F.doc(db,o.c,o.id); if(o.del) w.delete(r); else if(o.inc){ const d={...o.d}; for(const k in o.inc) d[k]=F.increment(o.inc[k]); w.set(r,d,{merge:true}); } else w.set(r,o.d); });
+      await w.commit(); } }
+  };
+}
+function nuvemTela(){ const st=N.estado;
+  if(st==='carregando') return `<div class="lock card"><div style="font-size:40px">☁️</div><h2>Conectando…</h2><p class="mu">Carregando os dados da loja.</p></div>`;
+  if(st==='negado') return `<div class="lock card"><div style="font-size:40px">⛔</div><h2>Acesso negado</h2><p class="mu">A conta <b>${esc(N.user?.email||'')}</b> não tem permissão neste sistema. Peça ao dono para liberar o seu e-mail.</p><button class="btn big light" onclick="nuvemSair()">Entrar com outra conta</button></div>`;
+  if(st==='erro') return `<div class="lock card"><div style="font-size:40px">⚠️</div><h2>Sem conexão com a nuvem</h2><p class="mu">${esc(N.erro)}</p><button class="btn big" onclick="location.reload()">Tentar de novo</button></div>`;
+  return `<div class="lock card"><img src="logo.png" alt="" style="width:170px;margin:4px auto 8px;display:block"><h2>Entrar no sistema</h2><p class="mu">Use a conta Google da loja. Os dados ficam na nuvem e aparecem iguais em todos os aparelhos.</p><button class="btn big" onclick="nuvemEntrar()">Entrar com Google</button>${N.erro?`<p class="neg" style="font-size:14px">${esc(N.erro)}</p>`:''}</div>`; }
+async function nuvemEntrar(){ N.erro=''; try{ await N.f.entrar(); }catch(e){ N.erro='Não foi possível entrar: '+(e.code||e.message); render(); } }
+async function nuvemSair(){ if(!confirm('Sair da conta neste aparelho?')) return; N.unsub.forEach(u=>u()); N.unsub=[]; await N.f.sair(); location.reload(); }
+function dadosLocais(){ return NCOLS.reduce((t,c)=>t+(S[c]||[]).length,0); }
+async function nuvemIniciar(){
+  try{ N.f=await nuvemCarregarSDK(); }catch(e){ N.estado='erro'; N.erro='Precisa de internet na primeira vez para carregar o sistema da nuvem.'; render(); return; }
+  N.f.redirectResult?.();
+  N.f.onUser(async u=>{ N.user=u; N.unsub.forEach(x=>x()); N.unsub=[]; N.ok=false;
+    if(!u){ N.estado='login'; render(); return; }
+    N.estado='carregando'; render();
+    let meta; try{ meta=await N.f.getMeta(); }catch(e){ if(/permission/.test(e.code||e.message)){ N.estado='negado'; render(); return; } N.estado='erro'; N.erro=e.message; render(); return; }
+    if(!meta){
+      const n=dadosLocais();
+      if(n&&confirm(`A nuvem ainda está vazia.\n\nEste aparelho tem ${S.produtos.length} produtos, ${S.vendas.length} vendas e ${S.orcamentos.length} orçamentos.\n\nEnviar estes dados para a nuvem? Eles passam a ser os dados oficiais da loja em todos os aparelhos.\n\n(Faça isso no aparelho que está com os dados CERTOS.)`)){
+        toast('Enviando dados para a nuvem…',4000);
+        const ops=[]; NCOLS.forEach(c=>(S[c]||[]).forEach(x=>{ if(x&&x.id) ops.push({c,id:String(x.id),d:limpo(x)}); }));
+        try{ await N.f.lote(ops); await N.f.salvarConfig(limpo(S.config)); }catch(e){ N.estado='erro'; N.erro='Falha ao enviar: '+e.message; render(); return; }
+      } else if(n){ if(!confirm('Começar a nuvem VAZIA? Os dados deste aparelho não serão enviados.')){ N.estado='login'; await N.f.sair(); return; } }
+      await N.f.setMeta({criado:new Date().toISOString(),por:u.email});
+    } else if(dadosLocais()&&localStorage.getItem('maia_nuvem')!==meta.criado){
+      try{ const d={app:'maia-sistema',versao:1,em:new Date().toISOString()}; KEYS.forEach(k=>d[k]=S[k]); await DB.set('backupAntesNuvem',d); }catch(e){}
+    }
+    try{ localStorage.setItem('maia_nuvem',meta?.criado||'1'); }catch(e){}
+    NCOLS.forEach(c=>{ N.cache[c]=new Map(); });
+    let chegou=0;
+    NCOLS.forEach(c=>N.unsub.push(N.f.ouvirCol(c,(arr,pend)=>{
+      const o=ORDEM[c]; if(o) arr.sort((a,b)=>String(a[o]).localeCompare(String(b[o])));
+      S[c]=arr; N.cache[c]=new Map(arr.map(x=>[String(x.id),JSON.stringify(x)])); DB.set(c,arr);
+      if(!N.ok&&++chegou>=NCOLS.length){ N.ok=true; N.estado='ok'; checarEntradas(); aplicarFotosRepo(); render(); }
+      else if(N.ok&&!pend) nuvemRender();
+    },e=>{ if(/permission/.test(e.code||'')){ N.estado='negado'; render(); } })));
+    N.unsub.push(N.f.ouvirConfig((d,pend)=>{ if(d){ S.config={...S.config,...d}; DB.set('config',S.config); if(N.ok&&!pend) nuvemRender(); } }));
+  });
+}
+function nuvemRender(){ const a=document.activeElement; const digitando=a&&a.closest&&a.closest('#view, #mBody')&&/INPUT|TEXTAREA|SELECT/.test(a.tagName);
+  if(digitando||!$('#modal').hidden||!$('#scan').hidden){ N.renderPend=true; return; } N.renderPend=false; render(); }
+document.addEventListener('focusout',()=>setTimeout(()=>{ if(N.renderPend) nuvemRender(); },300));
+function nuvemSalvar(keys){ if(!N.ok) return; const ops=[];
+  keys.forEach(c=>{ if(c==='config'){ N.f.salvarConfig(limpo(S.config)).catch(e=>toast('Erro ao salvar na nuvem: '+e.message)); return; }
+    if(!NCOLS.includes(c)) return; const cache=N.cache[c]||new Map(); const vivos=new Set();
+    (S[c]||[]).forEach(x=>{ if(!x||!x.id) return; const id=String(x.id); vivos.add(id); const j=JSON.stringify(x); const ant=cache.get(id); if(ant===j) return;
+      const d=limpo(x); let inc=null;
+      if(ant&&(c==='produtos'||c==='clientes')){ const k=c==='produtos'?'estoque':'saldo'; const old=JSON.parse(ant)[k]; if(typeof old==='number'&&typeof d[k]==='number'&&old!==d[k]){ inc={[k]:r2(d[k]-old)}; delete d[k]; } }
+      ops.push(inc?{c,id,d,inc}:{c,id,d}); cache.set(id,j); });
+    [...cache.keys()].forEach(id=>{ if(!vivos.has(id)){ ops.push({c,id,del:true}); cache.delete(id); } });
+    N.cache[c]=cache; });
+  if(ops.length) N.f.lote(ops).catch(e=>toast('Erro ao salvar na nuvem: '+(e.code||e.message),4000)); }
 
 /* ================= períodos ================= */
 function range(p){
@@ -774,8 +857,9 @@ function vMais(){ const c=S.config;
     <label>PIN do dono (protege Início, Financeiro, Mais e cadastro de produtos)</label><input id="cf_pin" type="password" inputmode="numeric" maxlength="8" value="${esc(c.pin)}" placeholder="deixe vazio para não usar">
     <label class="row"><input type="checkbox" id="cf_neg" ${c.estoqueNegativo?'checked':''} style="width:auto"> Permitir vender com estoque zerado</label>
     <br><button class="btn" data-act="saveCfg">Salvar</button></div>
-  <div class="card"><b class="neg">Zona de perigo</b><p class="mu">Apaga todos os dados deste aparelho.</p><button class="btn red" data-act="wipe">Apagar tudo</button></div>
-  <p class="mu" style="text-align:center">Maia Construção · Sistema v1.5 · dados salvos neste aparelho</p>`; }
+  <div class="card"><b class="neg">Zona de perigo</b><p class="mu">Apaga todos os dados da loja (em todos os aparelhos).</p><button class="btn red" data-act="wipe">Apagar tudo</button></div>
+  <div class="card"><b>☁️ Conta e nuvem</b><p class="mu">Conectado como <b>${esc(N.user?.email||'—')}</b>. Tudo o que você faz aqui aparece nos outros aparelhos. Sem internet o sistema continua funcionando e envia quando a conexão voltar.</p><button class="btn light" onclick="nuvemSair()">Sair desta conta</button></div>
+  <p class="mu" style="text-align:center">Maia Construção · Sistema v2.0 · dados na nuvem</p>`; }
 function openCli(id,fromPdv=false){ const c=id?cli(id):{id:'',nome:'',telefone:'',tipo:'',obs:'',saldo:0};
   modal(`<div class="row between"><h2>${id?'Editar':'Novo'} cliente</h2><button class="ghost" onclick="closeModal()">✕</button></div>
   <label>Nome *</label><input id="cl_n" value="${esc(c.nome)}"><label>WhatsApp</label><input id="cl_t" inputmode="tel" value="${esc(c.telefone)}" placeholder="(63) 9…">
@@ -824,8 +908,8 @@ async function importProdutos(file){ if(!file) return; if(!canEdit()) return; tr
   save('produtos'); toast(`${novos} novos, ${at} atualizados`,3500); render(); }
 function baixarArquivo(nome,conteudo,tipo){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([conteudo],{type:tipo})); a.download=nome; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500); }
 function backup(){ const d={app:'maia-sistema',versao:1,em:new Date().toISOString()}; KEYS.forEach(k=>d[k]=S[k]); baixarArquivo(`backup-maia-${dstr(new Date())}.json`,JSON.stringify(d),'application/json'); }
-async function restaurar(file){ if(!file) return; try{ const d=JSON.parse(await file.text()); if(d.app!=='maia-sistema') throw 0; if(!confirm('Substituir TODOS os dados deste aparelho pelo backup?')) return;
-  KEYS.forEach(k=>{ if(d[k]!==undefined) S[k]=d[k]; }); KEYS.forEach(k=>DB.set(k,S[k])); toast('Backup restaurado'); render(); }catch(e){ toast('Arquivo de backup inválido'); } }
+async function restaurar(file){ if(!file) return; try{ const d=JSON.parse(await file.text()); if(d.app!=='maia-sistema') throw 0; if(!confirm('Substituir TODOS os dados da loja (em todos os aparelhos) pelo backup?')) return;
+  KEYS.forEach(k=>{ if(d[k]!==undefined) S[k]=d[k]; }); save(...KEYS.filter(k=>k!=='rascunho')); toast('Backup restaurado'); render(); }catch(e){ toast('Arquivo de backup inválido'); } }
 
 /* ================= Google Planilhas ================= */
 let syncT=null;
@@ -891,14 +975,14 @@ const ACT={
   saveSheets:()=>{ Object.assign(S.config,{sheetsUrl:$('#cf_url').value.trim(),sheetsToken:$('#cf_tok').value.trim(),autoSync:$('#cf_auto').checked}); save('config'); toast('Configuração salva'); },
   pushNow:()=>{ ACT.saveSheets(); pushSheets(false); }, pullNow:()=>{ ACT.saveSheets(); pullSheets(); },
   saveCfg:()=>{ Object.assign(S.config,{icmsPadrao:num($('#cf_icms').value),telefoneLoja:$('#cf_tel').value.trim(),endereco:$('#cf_end').value.trim(),orcValidade:Math.max(1,num($('#cf_val').value)||7),orcPixDesc:Math.max(0,Math.min(30,num($('#cf_pix').value))),orcCondicoes:$('#cf_cond').value,metaMensal:num($('#cf_meta').value),loja:$('#cf_loja').value.trim()||'Maia Construção',pin:$('#cf_pin').value.trim(),estoqueNegativo:$('#cf_neg').checked}); if(S.config.pin) UI.unlocked=true; save('config'); toast('Salvo'); render(); },
-  wipe:()=>{ if(prompt('Digite APAGAR para confirmar')!=='APAGAR') return; ['produtos','vendas','despesas','clientes','recebimentos'].forEach(k=>{S[k]=[];DB.set(k,[]);}); toast('Dados apagados'); render(); },
+  wipe:()=>{ if(prompt('ATENÇÃO: apaga os dados da loja em TODOS os aparelhos.\nDigite APAGAR para confirmar')!=='APAGAR') return; const ks=['produtos','vendas','despesas','clientes','recebimentos','orcamentos','entradas']; ks.forEach(k=>{S[k]=[];}); save(...ks); toast('Dados apagados'); render(); },
   scanStop:()=>scanStop()
 };
 document.addEventListener('click',e=>{ const el=e.target.closest('[data-act]'); if(!el) return; const f=ACT[el.dataset.act]; if(f){ e.preventDefault(); f(el,e); } });
 document.addEventListener('click',e=>{ if(!e.target.closest('.search')){ const r=$('#pdvRes'); if(r) r.innerHTML=''; } });
 
 /* ================= início ================= */
-(async()=>{ await load(); UI.tab=S.config.pin?'vender':'inicio'; render(); checarEntradas(); aplicarFotosRepo();
+(async()=>{ await load(); UI.tab=S.config.pin?'vender':'inicio'; render(); nuvemIniciar();
   if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
   try{ navigator.storage?.persist?.(); }catch(e){}
 })();

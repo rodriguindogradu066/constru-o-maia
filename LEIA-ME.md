@@ -1,4 +1,8 @@
-# Sistema Maia Construção v1.5 — como instalar
+# Sistema Maia Construção v2.0 — como instalar
+
+**Novidade da v2.0 — Dados na nuvem (Firebase):** produtos, estoque, vendas, orçamentos, clientes e despesas ficam num banco só, e aparecem iguais em todos os aparelhos, na hora. Entre com a conta Google liberada nas regras do Firestore. Sem internet o sistema continua funcionando e envia quando a conexão voltar.
+
+**Primeira vez:** abra primeiro no aparelho que tem os dados CERTOS e aceite "Enviar estes dados para a nuvem". Nos outros aparelhos, os dados antigos são substituídos pelos da nuvem (uma cópia fica guardada no aparelho por segurança).
 
 **Novidades da v1.5:** foto pequena do produto (tirada pela câmera) na lista, no caixa e na entrada; **custo real = compra + ICMS + frete**, usado na margem e no lucro; na entrada de mercadoria o frete da nota é dividido entre os produtos pelo valor; ICMS padrão em Mais → Loja e segurança. A margem sugerida agora é margem de verdade (40% = 40% do preço de venda).
 
