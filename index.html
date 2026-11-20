@@ -708,12 +708,12 @@ function entAuto(e){ const agora=new Date().toISOString(); const c4=v=>Math.roun
   const reg={id:e.id,data:agora,fornecedor:e.fornecedor||'',nota:e.nota||'',itens:[],total:0,auto:true};
   e.itens.forEach((i,k)=>{ const c=c4(i.custo), q=+i.qtd||0; let p=entAchar(i.codigo,i.nome);
     if(p&&(p.entradas||[]).includes(e.id)) return;
-    if(!p){ const pv=c&&i.mg?precoBonito(c/(1-i.mg/100)):0;
+    if(!p){ const pv=+i.preco?+i.preco:(c&&i.mg?precoBonito(c/(1-i.mg/100)):0);
       p={id:'e-'+e.id+'-'+k,nome:i.nome,codigo:String(i.codigo||''),categoria:i.categoria||'',unidade:i.unidade||'un',custoCompra:c,icms:0,frete:0,custo:c,preco:pv,precoDesc:0,estoque:q,estoqueMin:Math.max(1,Math.round(q*0.2)),ativo:true,criado:agora,foto:fotoRepo(i.codigo,i.nome),entradas:[e.id]};
       S.produtos.push(p); }
     else { if(daFoto.has(p.id)){ p.estoque=Math.max(+p.estoque||0,q); p.custo=c; }
       else { p.custo=+p.estoque>0&&+p.custo>0?c4((p.estoque*p.custo+q*c)/(+p.estoque+q)):c; p.estoque=r2((+p.estoque||0)+q); }
-      p.custoCompra=c; p.icms=p.icms||0; p.frete=p.frete||0; if(!+p.preco&&i.mg) p.preco=precoBonito(c/(1-i.mg/100)); if(!p.categoria) p.categoria=i.categoria||''; (p.entradas??=[]).push(e.id); }
+      p.custoCompra=c; p.icms=p.icms||0; p.frete=p.frete||0; if(+i.preco) p.preco=+i.preco; else if(!+p.preco&&i.mg) p.preco=precoBonito(c/(1-i.mg/100)); if(!p.categoria) p.categoria=i.categoria||''; (p.entradas??=[]).push(e.id); }
     reg.itens.push({pid:p.id,nome:p.nome,qtd:q,custo:c,custoReal:c}); });
   reg.total=r2(sum(reg.itens,i=>i.qtd*i.custo)); (S.entradas??=[]).push(reg); (S.config.entradasAplicadas??=[]).push(e.id); }
 function entBanner(){ if(!ENT_PEND.length) return '';

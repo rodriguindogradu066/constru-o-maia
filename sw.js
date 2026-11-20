@@ -1,5 +1,5 @@
 // Funciona offline: guarda o sistema e as bibliotecas no aparelho
-const CACHE='maia-v2-1';
+const CACHE='maia-v2-2';
 const SHELL=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./logo.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))));self.clients.claim();});

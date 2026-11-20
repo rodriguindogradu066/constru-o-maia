@@ -771,6 +771,44 @@
    ],
    "total": 2174.65,
    "auto": true
+  },
+  {
+   "id": "cad-vigas-2026-11-20",
+   "data": "2026-11-20",
+   "fornecedor": "",
+   "nota": "",
+   "descricao": "Cadastro de vigas de concreto",
+   "auto": true,
+   "total": 0,
+   "itens": [
+    {
+     "nome": "Viga de concreto 1,5m",
+     "codigo": "",
+     "categoria": "Material básico",
+     "unidade": "un",
+     "qtd": 0,
+     "custo": 0,
+     "preco": 35
+    },
+    {
+     "nome": "Viga de concreto 2m",
+     "codigo": "",
+     "categoria": "Material básico",
+     "unidade": "un",
+     "qtd": 0,
+     "custo": 0,
+     "preco": 45
+    },
+    {
+     "nome": "Viga de concreto 3m",
+     "codigo": "",
+     "categoria": "Material básico",
+     "unidade": "un",
+     "qtd": 0,
+     "custo": 0,
+     "preco": 95
+    }
+   ]
   }
  ]
 }
