@@ -1,27 +1,772 @@
 {
-  "entradas": [
+ "entradas": [
+  {
+   "id": "2026-11-20-piscina",
+   "data": "2026-11-20",
+   "fornecedor": "",
+   "descricao": "Entrega de 20/11 — produtos para piscina (Genco, Netuno) e pingadeiras",
+   "itens": [
     {
-      "id": "2026-11-20-piscina",
-      "data": "2026-11-20",
-      "fornecedor": "",
-      "descricao": "Entrega de 20/11 — produtos para piscina (Genco, Netuno) e pingadeiras",
-      "itens": [
-        {"nome": "Aspirador Asa Delta Netuno", "codigo": "7898931842065", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "foto: ~4"},
-        {"nome": "Escova curva Netuno", "codigo": "7898931842058", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "confira"},
-        {"nome": "Peneira metálica Netuno", "codigo": "7898931842119", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "foto: 2 pilhas"},
-        {"nome": "Adaptador rosca grossa (mangueira)", "codigo": "7898931842232", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "foto: ~7"},
-        {"nome": "Ponteira PVC rosca direita", "codigo": "7898931842133", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "foto: ~4"},
-        {"nome": "Reagente AT1 Genco 23ml", "codigo": "7896544401716", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~12"},
-        {"nome": "Limpa bordas Genco 1L", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~12"},
-        {"nome": "Algicida de manutenção Genco 1L", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~4"},
-        {"nome": "Genpool algicida sem cobre Genco 1L", "codigo": "7896544403727", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~11"},
-        {"nome": "Clarificante Genfloc Genco 1L", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~2"},
-        {"nome": "Ultra Clean detergente neutro p/ borda 500ml", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~3"},
-        {"nome": "Redutor de pH e alcalinidade Genco 1L", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~1"},
-        {"nome": "Algicida choque Hidroazul 1L", "codigo": "", "categoria": "Piscinas - Químicos", "unidade": "un", "dica": "foto: ~1"},
-        {"nome": "Limpeza pesada M&M", "codigo": "7898927843144", "categoria": "Piscinas - Acessórios", "unidade": "un", "dica": "confira"},
-        {"nome": "Pingadeira de concreto", "codigo": "", "categoria": "Pingadeiras", "unidade": "un", "dica": "foto: ~10"}
-      ]
+     "nome": "Aspirador Asa Delta Netuno",
+     "codigo": "7898931842065",
+     "categoria": "Piscinas - Acessórios",
+     "unidade": "un",
+     "dica": "foto: ~4"
+    },
+    {
+     "nome": "Escova curva Netuno",
+     "codigo": "7898931842058",
+     "categoria": "Piscinas - Acessórios",
+     "unidade": "un",
+     "dica": "confira"
+    },
+    {
+     "nome": "Peneira metálica Netuno",
+     "codigo": "7898931842119",
+     "categoria": "Piscinas - Acessórios",
+     "unidade": "un",
+     "dica": "foto: 2 pilhas"
+    },
+    {
+     "nome": "Adaptador rosca grossa (mangueira)",
+     "codigo": "7898931842232",
+     "categoria": "Piscinas - Acessórios",
+     "unidade": "un",
+     "dica": "foto: ~7"
+    },
+    {
+     "nome": "Ponteira PVC rosca direita",
+     "codigo": "7898931842133",
+     "categoria": "Piscinas - Acessórios",
+     "unidade": "un",
+     "dica": "foto: ~4"
+    },
+    {
+     "nome": "Reagente AT1 Genco 23ml",
+     "codigo": "7896544401716",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "dica": "foto: ~12"
+    },
+    {
+     "nome": "Limpa bordas Genco 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "dica": "foto: ~12"
+    },
+    {
+     "nome": "Algicida de manutenção Genco 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "dica": "foto: ~4"
+    },
+    {
+     "nome": "Genpool algicida sem cobre Genco 1L",
+     "codigo": "7896544403727",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "dica": "foto: ~11"
+    },
+    {
+     "nome": "Clarificante Genfloc Genco 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "dica": "foto: ~2"
+    },
+    {
+     "nome": "Ultra Clean detergente neutro p/ borda 500ml",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "dica": "foto: ~3"
+    },
+    {
+     "nome": "Redutor de pH e alcalinidade Genco 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "dica": "foto: ~1"
+    },
+    {
+     "nome": "Algicida choque Hidroazul 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "dica": "foto: ~1"
+    },
+    {
+     "nome": "Limpeza pesada M&M",
+     "codigo": "7898927843144",
+     "categoria": "Piscinas - Acessórios",
+     "unidade": "un",
+     "dica": "confira"
+    },
+    {
+     "nome": "Pingadeira de concreto",
+     "codigo": "",
+     "categoria": "Pingadeiras",
+     "unidade": "un",
+     "dica": "foto: ~10"
     }
-  ]
+   ]
+  },
+  {
+   "id": "nf-genco-467916",
+   "data": "2026-11-19",
+   "fornecedor": "Genco Química",
+   "nota": "NF 467916",
+   "descricao": "Produtos para piscina — frete FOB (por sua conta)",
+   "itens": [
+    {
+     "nome": "Pastilha de cloro Genclor T-200 200g Genco",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 60,
+     "custo": 5.8003,
+     "mg": 45
+    },
+    {
+     "nome": "Pastilha 3 em 1 múltipla ação T-200 200g Genco",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 60,
+     "custo": 5.4044,
+     "mg": 45
+    },
+    {
+     "nome": "Algicida de choque Genco 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 27.4051,
+     "mg": 40
+    },
+    {
+     "nome": "Algicida de choque Genco 5L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 4,
+     "custo": 151.6767,
+     "mg": 35
+    },
+    {
+     "nome": "Algicida de manutenção Genco 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 15.0534,
+     "mg": 40,
+     "dica": "já existe no sistema: se você já deu entrada contando a prateleira, ajuste a qtd para não contar 2 vezes"
+    },
+    {
+     "nome": "Algicida de manutenção Genco 5L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 4,
+     "custo": 86.3045,
+     "mg": 35
+    },
+    {
+     "nome": "Clarificante Genfloc Genco 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 10.7435,
+     "mg": 40,
+     "dica": "já existe no sistema: se você já deu entrada contando a prateleira, ajuste a qtd para não contar 2 vezes"
+    },
+    {
+     "nome": "pH Certo estabilizante de pH Genco 2kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 21.1042,
+     "mg": 40
+    },
+    {
+     "nome": "pH+ Mais barrilha Genco 2kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 18.7853,
+     "mg": 40
+    },
+    {
+     "nome": "Limpa bordas Genco 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 12.2583,
+     "mg": 40,
+     "dica": "já existe no sistema: se você já deu entrada contando a prateleira, ajuste a qtd para não contar 2 vezes"
+    },
+    {
+     "nome": "Sulfato de alumínio Genco 2kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 13.0872,
+     "mg": 40
+    },
+    {
+     "nome": "Cloro granulado múltipla ação Genco 1kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 19.9584,
+     "mg": 40
+    },
+    {
+     "nome": "Cloro granulado múltipla ação Genco balde 2,5kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 1,
+     "custo": 53.46,
+     "mg": 35
+    },
+    {
+     "nome": "Clorador flutuante Genco Cisne Negro",
+     "codigo": "",
+     "categoria": "Piscinas - Acessórios",
+     "unidade": "un",
+     "qtd": 6,
+     "custo": 35.4,
+     "mg": 45
+    },
+    {
+     "nome": "Cloro granulado múltipla ação Genco balde 10kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 154.737,
+     "mg": 30
+    }
+   ],
+   "total": 5018.4
+  },
+  {
+   "id": "ped-hidroazul-66079",
+   "data": "2026-11-17",
+   "fornecedor": "Hidroazul",
+   "nota": "Pedido 66079",
+   "descricao": "Produtos para piscina — frete do redespacho por sua conta",
+   "itens": [
+    {
+     "nome": "Algicida manutenção Hidroazul 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 20,
+     "custo": 14.13,
+     "mg": 40
+    },
+    {
+     "nome": "Algicida choque Hidroazul 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 20,
+     "custo": 22.49,
+     "mg": 40,
+     "dica": "já existe no sistema: se você já deu entrada contando a prateleira, ajuste a qtd para não contar 2 vezes"
+    },
+    {
+     "nome": "Limpa bordas Hidroazul 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 20,
+     "custo": 15.818,
+     "mg": 40,
+     "dica": "custo já com IPI 3,25%"
+    },
+    {
+     "nome": "Floc Plus 2 em 1 Hidroazul 1L",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 20,
+     "custo": 13.77,
+     "mg": 40
+    },
+    {
+     "nome": "Sulfato de alumínio Hidroazul 2kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 15.5,
+     "mg": 40,
+     "dica": "pedido em kg: 24 kg = 12 sacos de 2 kg"
+    },
+    {
+     "nome": "Elevador de alcalinidade Hidroazul 2kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 19.78,
+     "mg": 40,
+     "dica": "24 kg = 12 sacos de 2 kg"
+    },
+    {
+     "nome": "Barrilha Hidroazul 2kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 22.68,
+     "mg": 40,
+     "dica": "20 kg = 10 sacos de 2 kg"
+    },
+    {
+     "nome": "Cloro multiação Hidroazul 1kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 28,
+     "custo": 23.1629,
+     "mg": 40,
+     "dica": "custo já com IPI 5%"
+    },
+    {
+     "nome": "Cloro multiação Hidroazul balde 10kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 156.345,
+     "mg": 30,
+     "dica": "100 kg = 10 baldes; custo já com IPI 5%"
+    },
+    {
+     "nome": "Pastilha multiação Hidroazul 200g",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 60,
+     "custo": 7.4445,
+     "mg": 45,
+     "dica": "custo já com IPI 5%"
+    }
+   ],
+   "total": 4633.0
+  },
+  {
+   "id": "ped-mundial-7513",
+   "data": "2026-11-14",
+   "fornecedor": "Mundial Center Atacadista",
+   "nota": "Pedido 7513",
+   "descricao": "Hidráulica e elétrica",
+   "itens": [
+    {
+     "nome": "Bomba submersa Anauger 500 Slim 3/4 340W 220V",
+     "codigo": "7892201604834",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 2,
+     "custo": 258.83,
+     "mg": 25
+    },
+    {
+     "nome": "Bucha plástica Fix c/ anel S-08",
+     "codigo": "7898379890178",
+     "categoria": "Ferragens e Ferramentas",
+     "unidade": "un",
+     "qtd": 2000,
+     "custo": 0.0237,
+     "mg": 85,
+     "dica": "2 pacotes de ±1000 — vendida por unidade"
+    },
+    {
+     "nome": "Bucha plástica Fix c/ anel S-10",
+     "codigo": "7898379890185",
+     "categoria": "Ferragens e Ferramentas",
+     "unidade": "un",
+     "qtd": 1000,
+     "custo": 0.0478,
+     "mg": 85,
+     "dica": "2 pacotes de ±500 — vendida por unidade"
+    },
+    {
+     "nome": "Cabo flexível 2,5mm² preto Megatron",
+     "codigo": "7899278975423",
+     "categoria": "Elétrica",
+     "unidade": "m",
+     "qtd": 100,
+     "custo": 2.149,
+     "mg": 35,
+     "dica": "1 rolo de 100 m — vendido por metro"
+    },
+    {
+     "nome": "Cabo flexível 2,5mm² verde Megatron",
+     "codigo": "7899278975829",
+     "categoria": "Elétrica",
+     "unidade": "m",
+     "qtd": 100,
+     "custo": 2.1209,
+     "mg": 35,
+     "dica": "1 rolo de 100 m — vendido por metro"
+    },
+    {
+     "nome": "Cabo flexível 2,5mm² vermelho Megatron",
+     "codigo": "7899278976024",
+     "categoria": "Elétrica",
+     "unidade": "m",
+     "qtd": 100,
+     "custo": 2.149,
+     "mg": 35,
+     "dica": "1 rolo de 100 m — vendido por metro"
+    },
+    {
+     "nome": "Caixa sifonada quadrada 150x150x50 Herc",
+     "codigo": "7898059542724",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 4,
+     "custo": 30.87,
+     "mg": 40
+    },
+    {
+     "nome": "Eletroduto corrugado amarelo 25mm Fortlev",
+     "codigo": "7898911729997",
+     "categoria": "Elétrica",
+     "unidade": "m",
+     "qtd": 100,
+     "custo": 0.9737,
+     "mg": 45,
+     "dica": "2 rolos de 50 m — vendido por metro"
+    },
+    {
+     "nome": "Joelho 90° soldável 25mm Amanco",
+     "codigo": "7891960121422",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 25,
+     "custo": 0.51,
+     "mg": 70
+    },
+    {
+     "nome": "Luva soldável 25mm Amanco",
+     "codigo": "7891960121620",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 25,
+     "custo": 0.58,
+     "mg": 70
+    },
+    {
+     "nome": "Luva de correr soldável 25mm Multilit",
+     "codigo": "7898600573788",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 5.295,
+     "mg": 50
+    },
+    {
+     "nome": "Tanque de fibra duplo 1,20m x 50cm cinza Indimel",
+     "codigo": "7890262702209",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 1,
+     "custo": 188.18,
+     "mg": 25
+    },
+    {
+     "nome": "Tê soldável 25mm Multilit",
+     "codigo": "7898394631909",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 0.725,
+     "mg": 70
+    },
+    {
+     "nome": "Torneira ABS branca tanque/máquina Tigre",
+     "codigo": "7899349181333",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 3,
+     "custo": 23.29,
+     "mg": 40
+    },
+    {
+     "nome": "Torneira PVC jardim preta c/ bico Herc",
+     "codigo": "7898059540898",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 24,
+     "custo": 1.9942,
+     "mg": 55,
+     "dica": "2 pacotes de 12 — vendida por unidade"
+    },
+    {
+     "nome": "Tubo esgoto 100mm Multilit",
+     "codigo": "7898394632081",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 2,
+     "custo": 53.76,
+     "mg": 30
+    },
+    {
+     "nome": "Tubo soldável 25mm Multilit (6m)",
+     "codigo": "7898394632234",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 14.2783,
+     "mg": 30
+    }
+   ],
+   "total": 2159.86
+  },
+  {
+   "id": "nf-opcao-1021209",
+   "data": "2026-11-19",
+   "fornecedor": "Opção Atacadista",
+   "nota": "NF 1021209",
+   "descricao": "Elétrica, hidráulica e ferramentas",
+   "itens": [
+    {
+     "nome": "Adesivo PVC frasco 175g Tigre",
+     "codigo": "",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 2,
+     "custo": 15.315,
+     "mg": 40
+    },
+    {
+     "nome": "Caixa de luz PVC 4x2 amarela Tramontina",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 25,
+     "custo": 1.1612,
+     "mg": 60
+    },
+    {
+     "nome": "Caixa sifonada quadrada 100x100x50 Herc",
+     "codigo": "",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 4,
+     "custo": 11.47,
+     "mg": 40
+    },
+    {
+     "nome": "Carrinho de mão pneu c/ câmara 65L Tramontina",
+     "codigo": "",
+     "categoria": "Ferragens e Ferramentas",
+     "unidade": "un",
+     "qtd": 1,
+     "custo": 250.32,
+     "mg": 25
+    },
+    {
+     "nome": "Conjunto Aria 1 interruptor simples 6A Tramontina",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 20,
+     "custo": 4.99,
+     "mg": 45
+    },
+    {
+     "nome": "Conjunto Aria 1 interruptor + 2 tomadas 10A Tramontina",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 14.136,
+     "mg": 45
+    },
+    {
+     "nome": "Conjunto Aria 1 interruptor + 1 tomada 10A Tramontina",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 8.649,
+     "mg": 45
+    },
+    {
+     "nome": "Conjunto Aria 1 tomada 2P+T 10A Tramontina",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 20,
+     "custo": 4.632,
+     "mg": 45
+    },
+    {
+     "nome": "Conjunto Aria 1 tomada 2P+T 20A Tramontina",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 20,
+     "custo": 5.425,
+     "mg": 45
+    },
+    {
+     "nome": "Conjunto Aria 2 interruptores + 1 tomada 10A Tramontina",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 14.76,
+     "mg": 45
+    },
+    {
+     "nome": "Conjunto Aria 2 tomadas 2P+T 10A Tramontina",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 20,
+     "custo": 8.7505,
+     "mg": 45
+    },
+    {
+     "nome": "Conjunto Aria 3 tomadas 2P+T 10A Tramontina",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 20,
+     "custo": 12.237,
+     "mg": 45
+    },
+    {
+     "nome": "Fita aluminizada Veda Fácil 10cm Quartzolit",
+     "codigo": "",
+     "categoria": "Acabamento",
+     "unidade": "un",
+     "qtd": 1,
+     "custo": 16.09,
+     "mg": 40
+    },
+    {
+     "nome": "Fita aluminizada Veda Fácil 20cm Quartzolit",
+     "codigo": "",
+     "categoria": "Acabamento",
+     "unidade": "un",
+     "qtd": 1,
+     "custo": 30.58,
+     "mg": 40
+    },
+    {
+     "nome": "Lâmpada LED alta potência 40W E27 Foxlux",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 5,
+     "custo": 13.042,
+     "mg": 50,
+     "dica": "custo já com ICMS-ST"
+    },
+    {
+     "nome": "Lâmpada LED bulbo A60 9W Foxlux",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 2.901,
+     "mg": 55,
+     "dica": "custo já com ICMS-ST"
+    },
+    {
+     "nome": "Lâmpada LED bulbo A60 15W Foxlux",
+     "codigo": "",
+     "categoria": "Elétrica",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 3.758,
+     "mg": 55,
+     "dica": "custo já com ICMS-ST"
+    },
+    {
+     "nome": "Pá de bico nº 3 cabo longo 120cm Tramontina",
+     "codigo": "",
+     "categoria": "Ferragens e Ferramentas",
+     "unidade": "un",
+     "qtd": 1,
+     "custo": 41.9,
+     "mg": 35
+    },
+    {
+     "nome": "Registro esfera PVC soldável 25mm Herc",
+     "codigo": "",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 5,
+     "custo": 4.646,
+     "mg": 55
+    },
+    {
+     "nome": "Sifão sanfonado universal duplo branco",
+     "codigo": "",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 6,
+     "custo": 7.853,
+     "mg": 50
+    },
+    {
+     "nome": "Sifão sanfonado universal simples branco",
+     "codigo": "",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 10,
+     "custo": 4.6615,
+     "mg": 50
+    },
+    {
+     "nome": "Sifão sanfonado universal triplo branco c/ anel",
+     "codigo": "",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 4,
+     "custo": 13.33,
+     "mg": 50
+    },
+    {
+     "nome": "Tubo soldável 25mm Tigre (6m)",
+     "codigo": "",
+     "categoria": "Hidráulica",
+     "unidade": "un",
+     "qtd": 12,
+     "custo": 22.245,
+     "mg": 30
+    },
+    {
+     "nome": "Vassoura de aço regulável 22 dentes Tramontina",
+     "codigo": "",
+     "categoria": "Ferragens e Ferramentas",
+     "unidade": "un",
+     "qtd": 2,
+     "custo": 32.53,
+     "mg": 35
+    }
+   ],
+   "total": 2174.65
+  }
+ ]
 }
