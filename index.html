@@ -224,7 +224,7 @@ async function nuvemCarregarSDK(){
 }
 function nuvemTela(){ const st=N.estado;
   if(st==='carregando') return `<div class="lock card"><div style="font-size:40px">☁️</div><h2>Conectando…</h2><p class="mu">Carregando os dados da loja.</p></div>`;
-  if(st==='negado') return `<div class="lock card"><div style="font-size:40px">⛔</div><h2>Acesso negado</h2><p class="mu">A conta <b>${esc(N.user?.email||'')}</b> não tem permissão neste sistema. Peça ao dono para liberar o seu e-mail.</p><button class="btn big light" onclick="nuvemSair()">Entrar com outra conta</button></div>`;
+  if(st==='negado') return `<div class="lock card"><div style="font-size:40px">⛔</div><h2>Acesso negado</h2><p class="mu">A conta <b>${esc(N.user?.email||'')}</b> não tem permissão neste sistema. Peça ao dono para liberar o seu e-mail.</p>${N.erro?`<p class="mu" style="font-size:12px">Código: ${esc(N.erro)}</p>`:''}<button class="btn big" style="margin-bottom:8px" onclick="location.reload()">Tentar de novo</button><button class="btn big light" onclick="nuvemSair()">Entrar com outra conta</button></div>`;
   if(st==='erro') return `<div class="lock card"><div style="font-size:40px">⚠️</div><h2>Sem conexão com a nuvem</h2><p class="mu">${esc(N.erro)}</p><button class="btn big" onclick="location.reload()">Tentar de novo</button></div>`;
   return `<div class="lock card"><img src="logo.png" alt="" style="width:170px;margin:4px auto 8px;display:block"><h2>Entrar no sistema</h2><p class="mu">Use a conta Google da loja. Os dados ficam na nuvem e aparecem iguais em todos os aparelhos.</p><button class="btn big" onclick="nuvemEntrar()">Entrar com Google</button>${N.erro?`<p class="neg" style="font-size:14px">${esc(N.erro)}</p>`:''}</div>`; }
 async function nuvemEntrar(){ N.erro=''; try{ await N.f.entrar(); }catch(e){ N.erro='Não foi possível entrar: '+(e.code||e.message); render(); } }
@@ -236,7 +236,7 @@ async function nuvemIniciar(){
   N.f.onUser(async u=>{ N.user=u; N.unsub.forEach(x=>x()); N.unsub=[]; N.ok=false;
     if(!u){ N.estado='login'; render(); return; }
     N.estado='carregando'; render();
-    let meta; try{ meta=await N.f.getMeta(); }catch(e){ if(/permission/.test(e.code||e.message)){ N.estado='negado'; render(); return; } N.estado='erro'; N.erro=e.message; render(); return; }
+    let meta; try{ meta=await N.f.getMeta(); }catch(e){ if(/permission/.test(e.code||e.message)){ N.estado='negado'; N.erro=(e.code||'')+' (meta)'; render(); return; } N.estado='erro'; N.erro=e.message; render(); return; }
     if(!meta){
       const n=dadosLocais();
       if(n&&confirm(`A nuvem ainda está vazia.\n\nEste aparelho tem ${S.produtos.length} produtos, ${S.vendas.length} vendas e ${S.orcamentos.length} orçamentos.\n\nEnviar estes dados para a nuvem? Eles passam a ser os dados oficiais da loja em todos os aparelhos.\n\n(Faça isso no aparelho que está com os dados CERTOS.)`)){
@@ -256,7 +256,7 @@ async function nuvemIniciar(){
       S[c]=arr; N.cache[c]=new Map(arr.map(x=>[String(x.id),JSON.stringify(x)])); DB.set(c,arr);
       if(!N.ok&&++chegou>=NCOLS.length){ N.ok=true; N.estado='ok'; checarEntradas(); aplicarFotosRepo(); render(); }
       else if(N.ok&&!pend) nuvemRender();
-    },e=>{ if(/permission/.test(e.code||'')){ N.estado='negado'; render(); } })));
+    },e=>{ if(/permission/.test(e.code||'')){ N.estado='negado'; N.erro=(e.code||'')+' ('+c+')'; render(); } })));
     N.unsub.push(N.f.ouvirConfig((d,pend)=>{ if(d){ S.config={...S.config,...d}; DB.set('config',S.config); if(N.ok&&!pend) nuvemRender(); } }));
   });
 }
