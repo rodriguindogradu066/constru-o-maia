@@ -107,6 +107,11 @@ tr.sum td{font-weight:900;border-bottom:0;font-size:15px}
 details.gl summary{cursor:pointer;font-weight:700;padding:4px 0}details.gl dt{font-weight:700;margin-top:8px}details.gl dd{margin:2px 0 0;color:var(--mu);font-size:14px}
 .th{width:40px;height:40px;flex:none;border-radius:8px;object-fit:cover;background:#f1f1f3;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:18px;color:#aaa;overflow:hidden}
 .th.sm{width:34px;height:34px;font-size:15px}.th.lg{width:84px;height:84px;font-size:30px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;margin-top:8px}
+.ptile{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:8px;text-align:left;cursor:pointer;font:inherit;color:var(--tx);display:flex;flex-direction:column;gap:4px;min-height:44px}
+.ptile:active{transform:scale(.97)}.ptile img,.ptile .ph{width:100%;aspect-ratio:1;object-fit:contain;border-radius:8px;background:#fafafa;display:flex;align-items:center;justify-content:center;font-size:30px}
+.ptile .pn{font-size:13px;font-weight:700;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:31px}
+.ptile .pp{font-weight:800;font-size:15px}.ptile .ps{font-size:11px;color:var(--mu)}.ptile .ps.low{color:var(--bad);font-weight:700}
 hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
 </style>
 </head>
@@ -405,8 +410,15 @@ function vVender(){
   </div>
   <div style="height:84px"></div>
   <div class="checkout"><div class="t"><small>${sum(UI.cart,'qtd')} itens${UI.pag?' · '+UI.pag:''}</small><b>${fmt(t.total)}</b></div><button class="btn ${UI.pag?'green':''}" data-act="finalizar">${UI.pag?'✔ Finalizar':'Escolher pagamento'}</button></div>`}`:''}
+  ${vGrade()}
   ${isOrc?`<h3 style="margin-top:18px">Meus orçamentos</h3><div class="card">${orcListHtml(true)}</div>`:''}`;
 }
+function vGrade(){ const cats=[...new Set(S.produtos.filter(p=>p.ativo!==false).map(p=>p.categoria).filter(Boolean))].sort();
+  const l=S.produtos.filter(p=>p.ativo!==false&&(!UI.vcat||p.categoria===UI.vcat)).sort((a,b)=>a.nome.localeCompare(b.nome));
+  if(!S.produtos.length) return '';
+  return `<h3 style="margin-top:16px">Toque no produto para adicionar</h3>
+  <div class="chips"><button class="chip ${!UI.vcat?'on':''}" onclick="UI.vcat='';render()">Todos</button>${cats.map(c=>`<button class="chip ${UI.vcat===c?'on':''}" onclick="UI.vcat='${esc(c)}';render()">${esc(c)}</button>`).join('')}</div>
+  <div class="pgrid">${l.slice(0,240).map(p=>`<button class="ptile" onclick="addCart('${p.id}');render();toast('+1 ${esc(p.nome).replace(/'/g,'')}',1200)">${p.foto?`<img src="${p.foto}" alt="" loading="lazy">`:'<span class="ph">📦</span>'}<span class="pn">${esc(p.nome)}</span><span class="pp">${fmt(p.preco)}</span><span class="ps ${+p.estoque<=+p.estoqueMin?'low':''}">${p.estoque} ${esc(p.unidade||'un')} em estoque</span></button>`).join('')}</div>${UI.cart.length?'<div style="height:84px"></div>':''}`; }
 function pdvResults(){
   const q=norm(UI.vq).trim(); const el=$('#pdvRes'); if(!el) return;
   if(!q){ el.innerHTML=''; return; }
