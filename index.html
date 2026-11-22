@@ -300,9 +300,9 @@ function periodChips(){
 }
 function calc(a,b){
   const vs=vendasEm(a,b), ds=despesasEm(a,b);
-  const fat=sum(vs,'total'), custo=sum(vs,'custoTotal'), desp=sum(ds,'valor');
+  const fat=sum(vs,'total'), custo=sum(vs,'custoTotal'), desp=sum(ds,'valor'), taxas=sum(vs,v=>+v.taxaValor||0);
   const cheio=sum(vs,v=>sum(v.itens,i=>(i.precoCheio??i.preco)*i.qtd)), descontos=cheio-fat;
-  return {vs,ds,fat,custo,desp,bruto:fat-custo,liq:fat-custo-desp,descontos,n:vs.length,ticket:vs.length?fat/vs.length:0};
+  return {vs,ds,fat,custo,desp,taxas,bruto:fat-custo-taxas,liq:fat-custo-taxas-desp,descontos,n:vs.length,ticket:vs.length?fat/vs.length:0};
 }
 
 /* ================= TELA: bloqueio ================= */
@@ -366,7 +366,7 @@ function vInicio(){
   <div class="card list">${low.length?low.slice(0,10).map(p=>`<div class="it" data-act="editProd" data-id="${p.id}">${thumb(p,'sm')}<div class="grow"><div class="nm">${esc(p.nome)}</div><div class="mu">mínimo ${p.estoqueMin||0}</div></div><span class="badge low">${p.estoque} ${esc(p.unidade||'un')}</span></div>`).join(''):'<div class="empty">Tudo certo com o estoque 👍</div>'}</div>
   <div class="card"><details class="gl"><summary>ℹ️ Como cada número é calculado</summary><dl>
     <dt>Faturamento</dt><dd>Soma do total das vendas (sem as canceladas), já com descontos. Inclui vendas no fiado.</dd>
-    <dt>Lucro bruto e margem</dt><dd>Faturamento menos o custo dos produtos vendidos. Margem = lucro bruto ÷ faturamento.</dd>
+    <dt>Lucro bruto e margem</dt><dd>Faturamento menos o custo dos produtos vendidos e as taxas da maquininha. Margem = lucro bruto ÷ faturamento.</dd>
     <dt>Despesas</dt><dd>Contas lançadas em Financeiro → Despesas (aluguel, energia…). Compra de mercadoria não entra aqui.</dd>
     <dt>Lucro líquido</dt><dd>Lucro bruto menos despesas. É o que sobra de verdade.</dd>
     <dt>Ticket médio</dt><dd>Faturamento ÷ número de vendas.</dd>
@@ -405,6 +405,9 @@ function vVender(){
     <label id="pagLbl">Forma de pagamento</label>
     <div class="pays">${PAGS.map(p=>`<button class="${UI.pag===p?'on':''}" data-act="pag" data-p="${p}">${p}</button>`).join('')}</div>
     ${UI.pag==='Dinheiro'?`<label>Valor recebido</label><input inputmode="decimal" value="${esc(UI.recebido)}" placeholder="${t.total.toFixed(2).replace('.',',')}" onchange="UI.recebido=this.value;render()">${troco!==null?`<div class="row between" style="margin-top:6px"><span>Troco</span><b class="${troco<0?'neg':'pos'}">${fmt(troco)}</b></div>`:''}`:''}
+    ${ehCartao(UI.pag)?(()=>{ const tp=num(UI.taxa); const tv=r2(t.total*tp/100); return `<label>Taxa da maquininha — ${UI.pag} (%)</label><input inputmode="decimal" value="${esc(UI.taxa||'')}" placeholder="ex: 1,99" onchange="UI.taxa=this.value;render()">
+    <div class="row between" style="margin-top:6px"><span class="mu">Taxa</span><b class="neg">${tp?'-'+fmt(tv):fmt(0)}</b></div>
+    <div class="row between"><span>Você recebe</span><b class="pos">${fmt(t.total-tv)}</b></div>`; })():''}
     <label>Cliente ${UI.pag==='Fiado'?'(obrigatório no fiado)':'(opcional)'}</label>
     <div class="row"><select onchange="UI.cliente=this.value"><option value="">— sem cliente —</option>${S.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).map(c=>`<option value="${c.id}" ${UI.cliente===c.id?'selected':''}>${esc(c.nome)}</option>`).join('')}</select><button class="btn sm light" data-act="novoCliPdv">+ Novo</button></div>
   </div>
@@ -436,6 +439,8 @@ function addByCode(code){
   if(p){ addCart(p.id); $('#scanInfo').innerHTML=`✅ <b>${esc(p.nome)}</b> — ${fmt(p.preco)}<br><span style="color:#F07819;font-weight:800;font-size:18px">${sum(UI.cart,'qtd')} itens · ${fmt(cartTotals().total)}</span>`; }
   else { $('#scanInfo').innerHTML=`❓ Código ${esc(code)} não cadastrado`; scanStop().then(()=>{ if(confirm('Produto com código '+code+' não está cadastrado. Cadastrar agora?')) openProd(null,{codigo:code},true); }); }
 }
+const ehCartao=p=>p==='Débito'||p==='Crédito';
+function taxaPadrao(p){ const c=S.config||{}; const v=p==='Débito'?c.taxaDebito:p==='Crédito'?c.taxaCredito:null; return v!=null&&v!==''?String(v).replace('.',','):''; }
 function finalizar(){
   if(!UI.cart.length) return toast('Carrinho vazio');
   if(!UI.pag){ $('#pagLbl')?.scrollIntoView({behavior:'smooth',block:'center'}); return toast('Escolha a forma de pagamento'); }
@@ -446,8 +451,11 @@ function finalizar(){
   const itens=UI.cart.map(c=>{ const p=c.pid?prod(c.pid):null; return {pid:c.pid||null,nome:p?p.nome:c.nome,codigo:p?.codigo||'',qtd:c.qtd,preco:unitPrice(c),precoCheio:p?+p.preco:+c.preco,custo:p?(+p.custo||0):(+c.custo||0),desc:!!c.desc}; });
   // rateio do desconto extra no lucro: entra no total
   const custoTotal=r2(sum(itens,i=>i.custo*i.qtd));
+  const taxaPct=ehCartao(UI.pag)?(num(UI.taxa)||0):0; if(taxaPct<0||taxaPct>30) return toast('Confira a taxa da maquininha');
+  const taxaValor=r2(t.total*taxaPct/100);
+  if(ehCartao(UI.pag)){ S.config=S.config||{}; S.config[UI.pag==='Débito'?'taxaDebito':'taxaCredito']=taxaPct; save('config'); }
   const c=UI.cliente?cli(UI.cliente):null;
-  const v={id:uid(),num:(S.vendas.reduce((m,x)=>Math.max(m,x.num||0),0)+1),data:new Date().toISOString(),itens,subtotal:t.sub,descontoExtra:t.dx,total:t.total,custoTotal,lucro:r2(t.total-custoTotal),pagamento:UI.pag,recebido,troco,clienteId:c?.id||'',clienteNome:c?.nome||'',status:'ok'};
+  const v={id:uid(),num:(S.vendas.reduce((m,x)=>Math.max(m,x.num||0),0)+1),data:new Date().toISOString(),itens,subtotal:t.sub,descontoExtra:t.dx,total:t.total,custoTotal,taxaPct,taxaValor,lucro:r2(t.total-custoTotal-taxaValor),pagamento:UI.pag,recebido,troco,clienteId:c?.id||'',clienteNome:c?.nome||'',status:'ok'};
   if(UI.orcId){ const o=orc(UI.orcId); if(o){ o.status='aprovado'; o.vendaId=v.id; o.aprovadoEm=v.data; v.orcamentoNum=o.num; } }
   S.vendas.push(v);
   itens.forEach(i=>{ const p=i.pid&&prod(i.pid); if(p) p.estoque=r2(+p.estoque-i.qtd); });
@@ -806,6 +814,7 @@ function vFinanceiro(){
       <tr><td>Faturamento (vendas)</td><td class="r">${fmt(c.fat)}</td></tr>
       <tr><td class="mu">Descontos concedidos</td><td class="r mu">${fmt(c.descontos)}</td></tr>
       <tr><td>(−) Custo das mercadorias vendidas</td><td class="r neg">${fmt(-c.custo)}</td></tr>
+      ${c.taxas?`<tr><td>(−) Taxas da maquininha</td><td class="r neg">${fmt(-c.taxas)}</td></tr>`:''}
       <tr><td><b>= Lucro bruto</b> <span class="mu">(${pct(c.fat?c.bruto/c.fat*100:0)})</span></td><td class="r">${fmt(c.bruto)}</td></tr>
       <tr><td>(−) Despesas</td><td class="r neg">${fmt(-c.desp)}</td></tr>
       <tr class="sum"><td>= Lucro líquido <span class="mu">(${pct(c.fat?c.liq/c.fat*100:0)})</span></td><td class="r ${c.liq>=0?'pos':'neg'}">${fmt(c.liq)}</td></tr></table></div>
@@ -829,7 +838,7 @@ function vFinanceiro(){
 function verVenda(id){ const v=S.vendas.find(x=>x.id===id);
   modal(`<div class="row between"><h2>Venda nº ${v.num}</h2><button class="ghost" onclick="closeModal()">✕</button></div><p class="mu">${dtbr(v.data)} · ${v.pagamento}${v.clienteNome?' · '+esc(v.clienteNome):''} ${v.status==='cancelada'?'<span class="badge low">CANCELADA</span>':''}</p>${v.status==='cancelada'?`<p class="mu">Cancelada em ${dtbr(v.canceladaEm)}${v.motivoCancel?' · motivo: '+esc(v.motivoCancel):''}</p>`:''}
   <table>${v.itens.map(i=>`<tr><td>${i.qtd}x ${esc(i.nome)}${i.desc?' <span class="badge or">desc.</span>':''}<div class="mu">${fmt(i.preco)} · custo ${fmt(i.custo)}</div></td><td class="r">${fmt(i.preco*i.qtd)}</td></tr>`).join('')}
-  ${v.descontoExtra?`<tr><td>Desconto extra</td><td class="r neg">-${fmt(v.descontoExtra)}</td></tr>`:''}<tr class="sum"><td>Total</td><td class="r">${fmt(v.total)}</td></tr><tr><td class="mu">Lucro da venda</td><td class="r pos">${fmt(v.lucro)}</td></tr></table><br>
+  ${v.descontoExtra?`<tr><td>Desconto extra</td><td class="r neg">-${fmt(v.descontoExtra)}</td></tr>`:''}<tr class="sum"><td>Total</td><td class="r">${fmt(v.total)}</td></tr>${v.taxaValor?`<tr><td class="mu">Taxa da maquininha (${String(v.taxaPct).replace('.',',')}%)</td><td class="r neg">-${fmt(v.taxaValor)}</td></tr>`:''}<tr><td class="mu">Lucro da venda</td><td class="r pos">${fmt(v.lucro)}</td></tr></table><br>
   <button class="btn big green" onclick="closeModal();recibo(S.vendas.find(x=>x.id==='${v.id}'))">📲 Comprovante</button>
   ${v.status!=='cancelada'?`<br><br><button class="btn big red" onclick="cancelarVenda('${v.id}')">Cancelar venda (devolve estoque)</button>`:''}`); }
 function cancelarVenda(id){ const v=S.vendas.find(x=>x.id===id); if(!v||v.status==='cancelada') return;
@@ -912,7 +921,7 @@ function delCli(id){ if(!confirm('Excluir cliente?')) return; S.clientes=S.clien
 function rowsAll(){
   return {
     Produtos:S.produtos.map(p=>({Nome:p.nome,Codigo:p.codigo,Categoria:p.categoria,Unidade:p.unidade,Custo_Compra:+(p.custoCompra??p.custo),ICMS_pct:+p.icms||0,Frete_un:+p.frete||0,Custo_Real:+p.custo,Preco_Venda:+p.preco,Preco_Desconto:+p.precoDesc||'',Margem_pct:+p.preco?r2((p.preco-p.custo)/p.preco*100):0,Estoque:+p.estoque,Estoque_Min:+p.estoqueMin,Valor_Estoque_Custo:r2(Math.max(0,p.estoque)*p.custo),Ativo:p.ativo!==false?'sim':'não'})),
-    Vendas:S.vendas.map(v=>({Numero:v.num,Data:dtbr(v.data),Cliente:v.clienteNome,Pagamento:v.pagamento,Subtotal:v.subtotal,Desconto_Extra:v.descontoExtra,Total:v.total,Custo:v.custoTotal,Lucro:v.lucro,Status:v.status})),
+    Vendas:S.vendas.map(v=>({Numero:v.num,Data:dtbr(v.data),Cliente:v.clienteNome,Pagamento:v.pagamento,Subtotal:v.subtotal,Desconto_Extra:v.descontoExtra,Total:v.total,Custo:v.custoTotal,Taxa_Maquininha:v.taxaValor||0,Lucro:v.lucro,Status:v.status})),
     Itens_Vendidos:S.vendas.flatMap(v=>v.itens.map(i=>({Venda:v.num,Data:dtbr(v.data),Produto:i.nome,Codigo:i.codigo,Qtd:i.qtd,Preco_Unit:i.preco,Usou_Desconto:i.desc?'sim':'não',Custo_Unit:i.custo,Total:r2(i.preco*i.qtd),Lucro:r2((i.preco-i.custo)*i.qtd),Status:v.status}))),
     Despesas:S.despesas.slice().sort((a,b)=>a.data.localeCompare(b.data)).map(d=>({Data:dbr(d.data),Descricao:d.descricao,Categoria:d.categoria,Valor:d.valor})),
     Clientes:S.clientes.map(c=>({Nome:c.nome,WhatsApp:c.telefone,Tipo:c.tipo,Saldo_Fiado:c.saldo,Obs:c.obs})),
@@ -994,7 +1003,7 @@ const ACT={
   togDesc:el=>{ const c=UI.cart[+el.dataset.i]; c.desc=!c.desc; render(); },
   rmItem:el=>{ UI.cart.splice(+el.dataset.i,1); render(); },
   clearCart:()=>{ if(confirm('Limpar carrinho?')){ UI.cart=[]; UI.descExtra=''; if(UI.cmode==='orc') UI.orcEdit=''; else UI.orcId=''; render(); } },
-  pag:el=>{ UI.pag=el.dataset.p; render(); },
+  pag:el=>{ UI.pag=el.dataset.p; UI.taxa=taxaPadrao(UI.pag); render(); },
   finalizar:()=>{ const t=cartTotals(); if(!S.config.estoqueNegativo){ const f=UI.cart.find(c=>c.pid&&+prod(c.pid).estoque<c.qtd); if(f) return toast('Estoque insuficiente: '+prod(f.pid).nome); } finalizar(); },
   avulso:()=>modal(`<h2>Item avulso</h2><p class="mu">Para algo sem cadastro (ex.: frete, serviço, areia por lata).</p><label>Descrição</label><input id="av_n"><div class="grid"><div><label>Preço (R$)</label><input id="av_p" inputmode="decimal"></div><div><label>Custo (R$)</label><input id="av_c" inputmode="decimal" placeholder="0"></div></div><label>Quantidade</label><input id="av_q" inputmode="decimal" value="1"><br><br><button class="btn big" onclick="const n=$('#av_n').value.trim(),p=num($('#av_p').value);if(!n||!p)return toast('Preencha descrição e preço');UI.cart.push({pid:null,nome:n,preco:p,custo:num($('#av_c').value),qtd:num($('#av_q').value)||1});closeModal();render()">Adicionar</button>`),
   novoCliPdv:()=>openCli(null,true),
