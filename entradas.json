@@ -809,6 +809,44 @@
      "preco": 95
     }
    ]
+  },
+  {
+   "id": "revenda-2026-11-28",
+   "data": "2026-11-28",
+   "fornecedor": "Revendedor",
+   "nota": "",
+   "descricao": "Chegada de 28/11 — químicos de piscina (revendedor)",
+   "auto": true,
+   "total": 0,
+   "itens": [
+    {
+     "nome": "Barrilha elevador de pH Clor Up 1,5kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 0,
+     "custo": 20,
+     "preco": 28
+    },
+    {
+     "nome": "Sulfato de alumínio Clor Up 2kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 0,
+     "custo": 20,
+     "preco": 28
+    },
+    {
+     "nome": "Sulfato de alumínio Genco 2kg",
+     "codigo": "",
+     "categoria": "Piscinas - Químicos",
+     "unidade": "un",
+     "qtd": 0,
+     "custo": 20,
+     "preco": 28
+    }
+   ]
   }
  ]
 }
